@@ -1,18 +1,18 @@
 ---
 layout: page
 title: About
-description: 打码改变世界
-keywords: Zhuang Ma, 马壮
+description: 坚持做好一件事
+keywords: lizhibiao, 李志标
 comments: true
 menu: 关于
 permalink: /about/
 ---
 
-我是马壮，码而生，码而立。
+大多数还轮不到拼天赋，因为我们努力的程度还远远没有达到需要去拼天赋的时候。
 
-仰慕「优雅编码的艺术」。
+熟能生巧！
 
-坚信熟能生巧，努力改变人生。
+未来路很长，一起成长！
 
 ## 联系
 
