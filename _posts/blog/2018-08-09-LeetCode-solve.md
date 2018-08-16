@@ -1,6 +1,6 @@
 ---
 layout: post
-title: leetcode题解
+title: LeetCode题解
 categories: Blog
 description: 本系列主要记录leetcode上的题目内容以及答案
 keywords: leetcode, solve
