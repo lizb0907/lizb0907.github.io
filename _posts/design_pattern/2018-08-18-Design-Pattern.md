@@ -1,70 +1,89 @@
 ---
 layout: post
-title: 代码优化小技巧（实战记录）
-categories: Review
-description: 本系列主要记录关于代码的优化小技巧
-keywords: review, code
+title: 设计模式
+categories: Design_Pattern
+description: 本系列记录常用的设计模式
+keywords: design, pattern
 ---
 
-总结工作、Effective java、秦小波java的151个建议
+设计模式并没有那么难，适当而不过度。
 
 **目录**
 
 * TOC
 {:toc}
 
-## 初步印象
+## 数组
 
-按惯例，第一步还是从 Android 的官方 API 文档里来建立对这几个类的初步印象，文档开头的说明里往往有一些比较关键的知识点。
 
-官方文档链接：
+### 283. Move Zeroes
+Given an array nums, write a function to move all 0's to the end of it while maintaining the relative order of the non-zero elements.
 
-* [Handler](https://developer.android.google.cn/reference/android/os/Handler)
-* [Looper](https://developer.android.google.cn/reference/android/os/Looper)
-* [MessageQueue](https://developer.android.google.cn/reference/android/os/MessageQueue)
-* [Message](https://developer.android.google.cn/reference/android/os/Message)
+Example:
 
-这几个类开头的说明本身也不长，为了避免断章取义误人子弟，就将其直译版完整地放在下面，当然更推荐的方式是自己去看原文。
+Input: [0,1,0,3,12]
+Output: [1,3,12,0,0]
+Note:
 
-### Handler
+You must do this in-place without making a copy of the array.
+Minimize the total number of operations.
 
-可以用 Handler 发送和处理与某线程的 MessageQueue 相关联的 Message/Runnable 对象。每个 Handler 实例只能与一个线程和它的消息队列相关联。当创建一个 Handler 时，它会绑定到当前线程和消息队列——从那时起，它将 Message 和 Runnable 传递给绑定的消息队列，并在它们从队列里被取出时执行对应逻辑。（*译注：此处描述不准确，创建 Handler 时并不一定是绑定到当前线程。*）
+给定一个数组，写一个函数将0元素移动到数组末尾，同时保持非0元素的位置不变。
 
-Handler 主要有两个用途：
+思路:
 
-1. 在未来某个时间点处理 Messages 或者执行 Runnables；
+给定一个下标变量k。然后判断当前数组位置下标的值是否为0，不为0和k位置数组值交换，然后k++。为0,不动，数组下标后移。
 
-2. 将一段逻辑切换到另一个线程执行。
+```java
+public class MoveZeros_02 {
+	public static void moveZeros_02(int[] arr){
+		int k=0;
+		for (int i=0;i<arr.length;i++){
+			if (arr[i]!=0){
+				swap(arr,i,k);
+				k++;
+			}
+		}
 
-可以使用 Handler 的以下方法来调度 Messages 和 Runnables：
+	}
 
-- post(Runnable)
+	public static void swap(int[] arr,int i,int j){
+		int temp=arr[i];
+		arr[i]=arr[j];
+		arr[j]=temp;
+	}
 
-- postAtTime(Runnable, long)
+	public static void main(String[] args) {
+		int[] arr={5,2,0,6,0,4,8,0};
+		MoveZeros_02 mz=new MoveZeros_02();
+		mz.moveZeros_02(arr);
+		for (int items:arr){
+			System.out.print(items);
+		}
+	}
+}
+```
 
-- postDelayed(Runnable, Object, long)
 
-- sendEmptyMessage(int)
+### 27. Remove Element
 
-- sendMessage(Message)
+Given an array nums and a value val, remove all instances of that value in-place and return the new length.
 
-- sendMessageAtTime(Message, long)
+Do not allocate extra space for another array, you must do this by modifying the input array in-place with O(1) extra memory.
 
-- sendMessageDelayed(Message, long)
+The order of elements can be changed. It doesn't matter what you leave beyond the new length.
 
-其中 postXXX 系列用于将 Runnable 对象加入队列，sendXXX 系列用于将 Message 对象加入队列，Message 对象通常会携带一些数据，可以在 Handler 的 handlerMessage(Message) 方法中处理（需要实现一个 Handler 子类）。
+Example 1:
 
-在调用 Handler 的 postXXX 和 sendXXX 时，可以指定当队列准备好时立即处理它们，也可以指定延时一段时间后处理，或某个绝对时间点处理。后面这两种能实现超时、延时、周期循环及其它基于时间的行为。
+Given nums = [3,2,2,3], val = 3,
 
-为应用程序创建一个进程时，其主线程专用于运行消息队列，该消息队列负责管理顶层应用程序对象（activities，broadcast receivers 等）以及它们创建的窗口。我们可以创建自己的线程，然后通过 Handler 与主线程进行通信，方法是从新线程调用我们前面讲到的 postXXX 或 sendXXX 方法，传递的 Runnable 或 Message 将被加入 Handler 关联的消息队列中，并适时进行处理。
+Your function should return length = 2, with the first two elements of nums being 2.
 
-### Looper
+It doesn't matter what you leave beyond the returned length.
 
-用于为线程执行消息循环的类。线程默认没有关联的消息循环，如果要创建一个，可以在执行消息循环的线程里面调用 prepare() 方法，然后调用 loop() 处理消息，直到循环停止。
+给你一个数组和value值，将数组中所有等于value值的数删除，返回新的长度。不为另一个数组分配额外空间。
 
-大多数与消息循环的交互都是通过 Handler 类。
-
-下面是实现一个 Looper 线程的典型例子，在 prepare() 和 loop() 之间初始化 Handler 实例，用于与 Looper 通信：
+思路:
 
 ```java
 class LooperThread extends Thread {
@@ -96,7 +115,7 @@ class LooperThread extends Thread {
 
 > 虽然 Message 的构造方法是 public 的，但最推荐的得到一个消息对象的方式是调用 Message.obtain() 或者 Handler.obtainMessage() 系列方法，这些方法会从一个对象回收池里捡回能复用的对象。
 
-## 提出问题
+## 字符串
 
 根据以上印象，及以前的使用经验，提出以下问题来继续本次源码分析之旅：
 
@@ -118,7 +137,7 @@ class LooperThread extends Thread {
 
 9. 上文提到，应用程序的主线程是运行一个消息循环，在代码里是如何反映的？
 
-## 解答问题
+## 查找问题
 
 ### Thread 与 Looper
 
@@ -508,7 +527,7 @@ public final class ActivityThread {
 
 就是我想象中的模样。这里只是简单找到这个位置，继续深入探索的话可以开启一个新的话题了，后续的篇章里再解决。
 
-## 总结
+## 动态规划
 
 ### 结论汇总
 
