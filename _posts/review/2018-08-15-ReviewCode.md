@@ -188,6 +188,41 @@ public static void main(String[] args)
 3.进行反射方法调用
 
 
+### 5.当心字符串连接性能
+
+字符串连接符，为连接n个字符串而重复地使用字符串连接操作符，需要n的平方级的时间。这是
+因为字符串不可变，当两个字符串被连接在一起时，他们的内容都要被拷贝。
+例：
+```java
+public String statement()
+{
+   String result = " ";
+   for(int i = 0; i < numItems(); i++)
+   {
+		 //lineForItem(i)迭代的值为字符串
+		 result += lineForItem(i);
+   }
+  return result;
+}
+```
+这阵做法开销随项目数量而呈平方级增加
+
+优化：   
+```java
+public String statement()
+   {
+       StringBuilder b = new StringBuilder(numItems() * LINE_WIDTH);
+       for(int i = 0; i < numItems(); i++)
+       {
+            b.append(lineForItem(i));
+       }
+      return b.toString;
+   }
+```
+这种方法预先分配了一个StringBuilder,大到足以容纳结果字符串。一定数据量测试下，比上一种方法，几十倍。
+即使因为预先不知道字符串长度，使用默认大小的StringBuilder，它仍然比第一种做法快50倍。
+
+
 ## 秦小波java151个建议
 
 
