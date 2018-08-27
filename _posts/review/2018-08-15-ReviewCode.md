@@ -147,6 +147,45 @@ public static void main(String[] args)
     };
 ```
 
+ 二：如果null对象引用被自动拆箱，就会得到一个NullPointerException异常
+ 例：
+```java
+public class Unbelievable
+{ 
+   static Integer i;
+   public static void main(String[] args)
+   {
+		if(i == 42)
+		  System.out.println("Unbelievable");
+   }
+}
+```
+虽然不会输出Unbelievable---但是它的行为也是很奇怪的。
+它在计算 i == 42 时会抛出NullPointerException异常。
+当在一项操作中混合使用基本类型和装箱类型时，装箱基本类型就会自动拆箱。
+要修正这个例子，声明i是int就行，而不是Integer。
+
+
+三：注意声明变量时不要不小心声明为Long，会导致性能严重下降
+```java
+public static void main(String[] args)
+{ 
+   Long sum = 0L;
+   for(long i = 0; i < Interger.MAX_VALUE; i++)
+   {
+	   sum += i;
+   }
+   System.out.println(sum);
+}
+```
+这个程序运行起来比预计要慢，因为它不小心将一个局部变量sum声明为是装箱基本类型，而不是
+基本类型long。变量反复地装箱和拆箱，导致性能明显的下降。
+
+
+什么时候用装箱类型呢？
+1.作为集合中的元素、键和值。你不能将基本类型放在集合中，因此必须使用装箱基本类型。
+2.参数化类型中，必须使用
+3.进行反射方法调用
 
 
 ## 秦小波java151个建议
