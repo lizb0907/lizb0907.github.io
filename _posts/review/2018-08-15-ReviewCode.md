@@ -205,7 +205,7 @@ public String statement()
   return result;
 }
 ```
-这阵做法开销随项目数量而呈平方级增加
+这种做法开销随项目数量而呈平方级增加
 
 优化：   
 ```java
