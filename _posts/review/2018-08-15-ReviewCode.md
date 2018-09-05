@@ -276,6 +276,25 @@ public static int mockAdd(int count)
 }
 ```
 
+### 2.三元操作符类型务必一致
+
+三元操作符是if-else的简化写法，常用
+注意：三元操作符的类型务必一致:
+```java
+public class Client
+{
+     public static void main(String[] args)
+     {
+             int i = 80;
+             String s = String.valueOf(i < 100 ? 90 : 100);
+             String t = String.valueOf(i < 100 ? 90 : 100.0);
+             System.out.println("两者是否相等:" +s.equals(t));
+      }
+}
+```
+结果是false
+因为 t 的值是 90.0 所以和 s不相等
+三元操作符，一个是int型，一个是浮点数，操作类型不一致，编译器会进行类型转换。
 
 
 
