@@ -225,6 +225,58 @@ public String statement()
 
 ## 秦小波java151个建议
 
+### 1.不要陷入自增++的陷阱
+
+例：
+```java
+int count = 0;
+for (int i = 0; i < 10; i++)
+{
+    count = count++;
+}
+System.out.println(count);
+```
+该程序输出的值为0
+count值是0，保存到临时变量，count++返回的是临时变量的值，所以count返回的还是0.
+你每次循环时，初始值都为0.所以返回的临时变量都是0.
+最后输出的就是0.
+
+```java
+int count = 0;
+for (int i = 0; i < 10; i++)
+{
+     count++;
+}
+System.out.println(count);
+```
+该程序输出值才是为10
+count++虽然返回0，但是它没有覆盖count的初始值，所以下一次，count的值就是从加1开始了。
+也可以理解为，右++要下一次再拿的时候才加1
+
+如何理解?
+count++是一个表达式，是有返回值的，它的返回值就是count自加前的值。
+java对自加是这样处理的:
+首先把count的值（注意是值，不是引用）拷贝到一个临时变量区，然后对count变量加1，最后返回临时变量的值。
+程序第一次循环时的详细处理步骤如下:
+1.JVM把count值（其值是0）拷贝到临时变量区。
+2.count值加1，这时候count的值是1。
+3.返回临时变量区的值，注意这个值是0，没修改过。
+4.返回值赋值给count,此时count值被重置为0。
+
+"count=count++"这条语句可以用如下代码来理解:
+```java
+public static int mockAdd(int count)
+{
+     //先保存初始值
+     int temp = count;
+     //做自增操作
+     count = count +  1;
+     //返回原始值
+     return temp；
+}
+```
+
+
 
 
 ## 工作中代码优化积累
