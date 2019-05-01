@@ -8,7 +8,7 @@ title: java服务端~我的学习之路
 subtitle: "坚持做好一件事"
 description: "李志标的个人博客"
 keywords: java, 服务器, 学习, 记录
-timezone: Asia/Shanghai
+timezone: BeiJing
 encoding: "utf-8"
 side_bar_repo_limit: 5
 
@@ -16,11 +16,9 @@ side_bar_repo_limit: 5
 #      Author      #
 # ---------------- #
 author: lzb
-#organization: zkh360.com
-#organization_url: http://www.zkh360.com
 github_username: lizb0907
 location: BeiJing, China
-email: chumpma@gmail.com
+email: lzbswf@163.com
 
 # ---------------- #
 #    Navigation    #
@@ -39,8 +37,8 @@ navs:
 #     label: 归档
 
   -
-    href: /wiki/
-    label: 维基
+#	 href: /wiki/
+#    label: 维基
 
   -
     href: /links/
