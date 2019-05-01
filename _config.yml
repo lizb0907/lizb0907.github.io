@@ -37,8 +37,8 @@ navs:
 #     label: 归档
 
   -
-#	 href: /wiki/
-#    label: 维基
+    href: /wiki/
+    label: 维基
 
   -
     href: /links/
