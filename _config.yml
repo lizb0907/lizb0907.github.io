@@ -89,15 +89,15 @@ comments_provider: gitalk
 # !!!重要!!! 请修改下面这些信息为你自己申请的
 # !!!Important!!! Please modify infos below to yours
 # https://disqus.com
-disqus:
-    username: 
+# disqus:
+#    username: 
 # https://imsun.net/posts/gitment-introduction/
-gitment:
-    owner: lizb0907
-    repo: lizb0907.github.io
-    oauth:
-        client_id: 5d12dbc76b919abb9980
-        client_secret: fb99fec6ef50ddddd166926a71d1310266c7b202
+# gitment:
+#    owner: lizb0907
+#    repo: lizb0907.github.io
+#    oauth:
+#        client_id: 5d12dbc76b919abb9980
+#       client_secret: fb99fec6ef50ddddd166926a71d1310266c7b202
 # https://github.com/gitalk/gitalk#install
 gitalk:
     owner: lizb0907
