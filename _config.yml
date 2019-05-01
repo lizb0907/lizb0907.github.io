@@ -102,8 +102,8 @@ comments_provider: gitalk
 gitalk:
     owner: lizb0907
     repo: lizb0907.github.io
-    clientID: 5d12dbc76b919abb9980
-    clientSecret: fb99fec6ef50ddddd166926a71d1310266c7b202
+    clientID: 2c8e4f88a570ab8445bc
+    clientSecret: b88e3522c090461f3f51675931bc810cf090d65d
 # 在使用其它评论组件时可点击显示 Disqus
 lazy_load_disqus : false
 
