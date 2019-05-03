@@ -8,9 +8,7 @@ menu: 关于
 permalink: /about/
 ---
 
-大多数还轮不到拼天赋，因为我们努力的程度还远远没有达到需要去拼天赋的时候。
-
-熟能生巧！
+时间上最难的就是坚持做好一件事！
 
 未来路很长，一起成长！
 
@@ -19,6 +17,7 @@ permalink: /about/
 {% for website in site.data.social %}
 * {{ website.sitename }}：[@{{ website.name }}]({{ website.url }})
 {% endfor %}
+### 博主微信：lizb0907 (有疑惑可以加好友交流)
 
 ## Skill Keywords
 
