@@ -1,6 +1,6 @@
 ---
 layout: post
-title: LeetCode题解
+title: 数据结构与算法
 categories: LeetCode
 description: 本系列主要是想系统的再过一遍数据结构与算法，重新打下基础。记录，方便以后翻阅。
 keywords: leetcode, solve
@@ -68,44 +68,6 @@ public class MoveZeros_02 {
 }
 ```
 
-
-### 27. Remove Element
-
-Given an array nums and a value val, remove all instances of that value in-place and return the new length.
-
-Do not allocate extra space for another array, you must do this by modifying the input array in-place with O(1) extra memory.
-
-The order of elements can be changed. It doesn't matter what you leave beyond the new length.
-
-Example 1:
-
-Given nums = [3,2,2,3], val = 3,
-
-Your function should return length = 2, with the first two elements of nums being 2.
-
-It doesn't matter what you leave beyond the returned length.
-
-给你一个数组和value值，将数组中所有等于value值的数删除，返回新的长度。不为另一个数组分配额外空间。
-
-思路:
-
-```java
-class LooperThread extends Thread {
-    public Handler mHandler;
-
-    public void run() {
-        Looper.prepare();
-
-        mHandler = new Handler() {
-            public void handleMessage(Message msg) {
-                // 在这里处理传入的消息
-            }
-        };
-
-        Looper.loop();
-    }
-}
-```
 
 
 
