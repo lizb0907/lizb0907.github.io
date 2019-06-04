@@ -1,9 +1,9 @@
 ---
 layout: post
 title: 常用算法
-categories: Alorithm
+categories: Algorithm
 description: 数据结构算法学习记录，一些常用算法实现
-keywords: Alorithm
+keywords: Algorithm
 ---
 
 牛客网左神算法课程学习记录，常用的一些算法自己再实现一遍，为刷leetcode准备。
