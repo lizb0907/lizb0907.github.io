@@ -106,5 +106,94 @@ public class MergeSort
 }
 ```
 
+## 随机快排实现（降低最小划分值概率，节省划分变量）
 
+### QuickSort
 
+```java
+/**
+ * 随机快排
+ * @author lizhibiao
+ * @date 2019/6/4 19:36
+ */
+public class QuickSort
+{
+    private static void quickSort(int[] arr)
+    {
+        if (null == arr || arr.length <= 1)
+        {
+            return;
+        }
+
+        quickSort(arr, 0, arr.length - 1);
+    }
+
+    private static void quickSort(int[] arr, int l, int r)
+    {
+       if (l < r)
+       {
+           //从l到r范围内随机一个数放到数组末尾位置
+           swap(arr, l + (int) (Math.random() * (r - l + 1)), r);
+
+           int[] partition = partition(arr, l, r);
+
+           quickSort(arr, l, partition[0] - 1);
+           quickSort(arr, partition[1] + 1, r);
+       }
+    }
+
+    private static void swap(int[] arr, int i, int j)
+    {
+        int tempValue = arr[i];
+        arr[i] = arr[j];
+        arr[j] = tempValue;
+    }
+
+    /**
+     * 小于区、等于区、大于区 过程
+     * @param arr 数组
+     * @param l start
+     * @param r end
+     * @return 返回等于区的左边界和右边界下标
+     */
+    private static int[] partition(int[] arr, int l, int r)
+    {
+        int less = l - 1;
+        int more = r;
+        while (l < more)
+        {
+            if (arr[l] < arr[r])
+            {
+                swap(arr, ++less, l++);
+            }
+            else if (arr[l] > arr[r])
+            {
+                swap(arr, l, --more);
+            }
+            else
+            {
+                l++;
+            }
+        }
+
+        //大于区第一个数和数组最后一个数交换（也就是划分值）
+        swap(arr, more, r);
+
+        //等于区的左边界和右边界下标
+        return new int[]{less + 1, more};
+    }
+
+    public static void main(String[] args)
+    {
+        int[] arr = {5, 6, 3, 8, 9, 6, 1, 8};
+        quickSort(arr);
+        for (int value : arr)
+        {
+            System.out.print(value);
+        }
+
+    }
+
+}
+
+```
