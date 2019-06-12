@@ -197,3 +197,107 @@ public class QuickSort
 }
 
 ```
+
+## 堆排序，先建立大根堆，再进行排序
+
+### HeapSort
+
+```java
+/**
+ * 堆排序，先建立大根堆，再进行排序
+ * @author lizhibiao
+ * @date 2019/6/12 11:42
+ */
+public class HeapSort
+{
+    
+    private static void heapSort(int[] arr)
+    {
+        if (null == arr || arr.length < 2)
+        {
+            return;
+        }
+        
+        int size = arr.length;
+        for (int i = 0; i < size; i++)
+        {
+            heapInsert(arr, i);
+        }
+
+        //完全二叉树头节点和尾节点交换位置，对应到数组就是0位置和数组末尾位置
+        //数组长度减1，末尾值相当于有序了
+        swap(arr, 0, --size);
+
+        while (size > 0)
+        {
+            heapify(arr, 0, size);
+            swap(arr, 0, --size);
+        }
+
+    }
+
+    /**
+     * 建立大根堆，当前索引和父节点比较，大继续往上和父节点比较
+     * @param arr 数组
+     * @param i 当前索引
+     */
+    private static void heapInsert(int[] arr, int i)
+    {
+        while (arr[i] > arr[(i - 1) / 2])
+        {
+            swap(arr, i, (i - 1) / 2);
+            i = (i - 1) / 2;
+        }
+    }
+
+    private static void swap(int[] arr, int i, int j)
+    {
+        int temp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = temp;
+    }
+
+    /**
+     * 如果树的头节点小于孩子节点，和大的孩子节点交互位置，往下沉，继续比较
+     * @param arr 数组
+     * @param index 当前头节点索引
+     * @param size 逻辑上的堆边界值
+     */
+    private static void heapify(int[] arr, int index, int size)
+    {
+        //左孩子索引
+        int leftChild = index * 2 + 1;
+        while (leftChild < size)
+        {
+            //左孩子和右孩子比较大小，取大的孩子节点索引
+            //注意这个三目运算比较，不满足的情况一定是要等于左孩子节点，因为右孩子节点可能越界
+            int largeIndex = leftChild + 1 < size && arr[leftChild + 1] > arr[leftChild] ? leftChild + 1 : leftChild;
+            largeIndex = arr[largeIndex] > arr[index] ? largeIndex : index;
+
+            if (largeIndex == index)
+            {
+                break;
+            }
+
+            swap(arr, index, largeIndex);
+            index = largeIndex;
+            //更新新的头节点的左孩子节点
+            leftChild = index * 2 + 1;
+        }
+    }
+
+
+    public static void main(String[] args)
+    {
+        int[] arr = {8, 6, 7, 6, 3, 1, 2};
+        heapSort(arr);
+        for (int value : arr)
+        {
+            System.out.print(value);
+        }
+
+    }
+
+}
+
+```
