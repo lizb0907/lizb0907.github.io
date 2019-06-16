@@ -301,3 +301,87 @@ public class HeapSort
 }
 
 ```
+
+## 比较器的使用
+
+### ComparatorExample
+
+```java
+/**
+ * 比较器的使用
+ * @author lizhibiao
+ * @date 2019/6/16 15:20
+ */
+public class ComparatorExample
+{
+    private static class Student
+    {
+        private String name;
+        private int age;
+
+        public Student(String name, int age)
+        {
+            this.name = name;
+            this.age = age;
+        }
+    }
+
+    /**
+     * 按学生年龄升序排序
+     */
+    private static class MyAscendingComparator implements Comparator<Student>
+    {
+
+        @Override
+        public int compare(Student o1, Student o2)
+        {
+            return o1.age - o2.age;
+        }
+
+    }
+
+    /**
+     * 按学生年龄降序排序
+     */
+    private static class MyDsendingComparator implements Comparator<Student>
+    {
+
+        @Override
+        public int compare(Student o1, Student o2)
+        {
+            return o2.age - o1.age;
+        }
+    }
+
+    public static void main(String[] args)
+    {
+        Student s1 = new Student("小菜", 20);
+        Student s2 = new Student("大鸟", 30);
+
+        Student[] arr = {s1, s2};
+
+        //升序
+        Arrays.sort(arr, new MyAscendingComparator());
+        sysMessage(arr);
+
+        System.out.println("===========分割线============");
+
+        //降序
+        Arrays.sort(arr, new MyDsendingComparator());
+        sysMessage(arr);
+    }
+
+    /**
+     * 输出信息
+     * @param arr 对象组
+     */
+    private static void sysMessage(Student[] arr)
+    {
+        for (Student student : arr)
+        {
+            System.out.println("name:" + student.name + "" + "age:" + student.age);
+        }
+    }
+
+}
+```
