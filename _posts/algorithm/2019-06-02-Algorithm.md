@@ -385,3 +385,90 @@ public class ComparatorExample
 
 }
 ```
+
+## 桶排序（求排序后相邻数最大差值，时间复杂度O（N））
+
+### MaxGap
+
+```java
+/**
+ * 相邻数最大差值
+ */
+public class MaxGap {
+
+	public static int maxGap(int[] nums) {
+		if (nums == null || nums.length < 2) {
+			return 0;
+		}
+		//注意这里的代码
+		int len = nums.length;
+		int min = Integer.MAX_VALUE;
+		int max = Integer.MIN_VALUE;
+
+		//找这个数组中的最大值和最小值, 这里进来的时候数组长度肯定大于等于2
+		for (int i = 0; i < len; i++) {
+			//找最小值，所以min一开始要传入最大的数去比较。min为int最大值,
+            // 下一次比较max传进来的就是取nums[i]
+			min = Math.min(min, nums[i]);
+			//找最大值，所以，max一开始要传最小值进去比较，max最int最小值
+			max = Math.max(max, nums[i]);
+		}
+
+		//最大值和最小值相等，说明nums数组里值都相等，所以差值为0
+		if (min == max) {
+			return 0;
+		}
+
+		//三个数组,表示i号桶是否为空和最大值、最小值
+		//hasNum数组用来记录每一个桶是否为空
+		boolean[] hasNum = new boolean[len + 1];
+		//maxs数组统计每个桶的最大值
+		int[] maxs = new int[len + 1];
+		//mins数组统计每个桶的最小值
+		int[] mins = new int[len + 1];
+
+		int bid = 0;
+		//建立所有桶信息
+		for (int i = 0; i < len; i++) {
+			//每个数根据最大值和最小值算出你该进哪个桶
+			bid = bucket(nums[i], len, min, max);
+			//因为这个数，判断当前桶的最小值是否需要更新
+			mins[bid] = hasNum[bid] ? Math.min(mins[bid], nums[i]) : nums[i];
+            //因为这个数，判断当前桶的最大值是否需要更新
+			maxs[bid] = hasNum[bid] ? Math.max(maxs[bid], nums[i]) : nums[i];
+			//桶肯定不为空了
+			hasNum[bid] = true;
+		}
+
+		int res = 0;
+		//上一个桶的最大值
+		int lastMax = maxs[0];
+		int i = 1;
+		//下标从1开始
+		for (; i <= len; i++) {
+			if (hasNum[i]) {
+			    //每一桶的最小值都去找上一个桶的最大值
+                //取当前桶最小值减去上一通最大值，差值的最大值
+				res = Math.max(res, mins[i] - lastMax);
+				//更新上一个桶的最大值
+				lastMax = maxs[i];
+			}
+		}
+		return res;
+	}
+
+    /**
+     * 均分桶，然后根据公式算出你该进哪个桶
+     * (包括最大值和最小值也是根据这个公式选进第0号桶和最后一个桶)
+     * @param num 当前值，判断要进哪个桶
+     * @param len 数组的长度
+     * @param min 当前桶的最小值
+     * @param max 当前桶的最大值
+     * @return 放入几号桶
+     */
+	public static int bucket(long num, long len, long min, long max) {
+		return (int) ((num - min) * len / (max - min));
+	}
+	
+}
+```
