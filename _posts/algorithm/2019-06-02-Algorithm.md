@@ -472,3 +472,113 @@ public class MaxGap {
 	
 }
 ```
+
+## KMP（求Str1是否包含str2，时间复杂度O（N））
+
+### Kmp
+
+```java
+/**
+ * KMP算法
+ * @author lizhibiao
+ * @date 2019/7/3 15:11
+ */
+public class Kmp
+{
+    /**
+     * 字符串str1是否包含字符串str2
+     * @param str1
+     * @param str2
+     * @return 如果包含返回字符串str1匹配的起始位置，不包含返回-1
+     */
+    private static int getIndexOf(String str1, String str2)
+    {
+        if (null == str1 || null == str2)
+        {
+            return -1;
+        }
+
+        if (str2.length() < 1 || str1.length() < str2.length())
+        {
+            return -1;
+        }
+
+        char[] char1 = str1.toCharArray();
+        char[] char2 = str2.toCharArray();
+
+        int[] nextArr = getNextArr(char2);
+
+        int first = 0;
+        int second = 0;
+
+        while (first < char1.length && second < char2.length)
+        {
+            if (char1[first] == char2[second])
+            {
+                first++;
+                second++;
+            }
+            else if (nextArr[second] == -1)
+            {
+                first++;
+            }
+            else
+            {
+                second = nextArr[second];
+            }
+        }
+
+        return second == char2.length ? first - second: -1;
+    }
+
+    /**
+     * next[]数组求解
+     * @param arr 传入的str2字符数组
+     * @return next[]数组
+     */
+    private static int[] getNextArr(char[] arr)
+    {
+       if (arr.length <= 1)
+       {
+           return new int[]{ - 1};
+       }
+
+       int[] next = new int[arr.length];
+       next[0] = -1;
+       next[1] = 0;
+
+       int index = 2;
+       //每次跳的索引，刚好等于当前要求数的上一个数的最大前缀。
+       int jump = 0;
+
+       //从0开始，所以小于数组长度!
+       while (index < next.length)
+       {
+           if (arr[index - 1] == arr[jump])
+           {
+               next[index++] = ++jump;
+           }
+           else if (jump > 0)
+           {
+               //往前跳,数组是从0开始,所以刚好等于当前要求数的上一个数的最大前缀
+               jump = next[jump];
+           }
+           else
+           {
+               //没法再往前跳为了，说明当前缀长度为0,并且index加1继续下一个数的缀长度
+               next[index++] = 0;
+           }
+
+       }
+
+       return next;
+    }
+
+    public static void main(String[] args) {
+        String str = "abcabcababaccc";
+        String match = "ababa";
+        System.out.println(getIndexOf(str, match));
+    }
+
+}
+```
