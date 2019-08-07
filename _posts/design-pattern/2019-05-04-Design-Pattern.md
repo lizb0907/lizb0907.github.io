@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 设计模式总结
-categories: Design_Pattern
+categories: Design-Pattern
 description: 本系列记录常用的设计模式
 keywords: design, pattern
 ---
