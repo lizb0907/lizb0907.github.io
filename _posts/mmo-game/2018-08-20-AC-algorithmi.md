@@ -1,6 +1,6 @@
 ---
 layout: post
-title: AC算法
+title: AC算法过滤游戏里敏感词汇实战
 categories: mmo-game
 description: AC算法过滤游戏里敏感词汇
 keywords: AC算法，过滤，敏感词汇
