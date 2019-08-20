@@ -309,3 +309,15 @@ ls -al shadow
 权限属性:
 
 ![](/images/posts/linux/2.png)
+
+### 6.如何改变文件属性与权限
+
+#### 1.指令
+
+```sh
+chgrp ：改变文件所属群组
+
+chown ：改变文件拥有者
+
+chmod ：改变文件的权限, SUID, SGID, SBIT 等等的特性
+```
