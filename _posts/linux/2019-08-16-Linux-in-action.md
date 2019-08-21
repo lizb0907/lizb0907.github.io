@@ -285,7 +285,9 @@ ls
 
 ### 2.查看文件名和属性
 ```sh
-ls -al
+ls -al  包括显示隐藏文件
+
+ls -l   不显示隐藏文件
 ```
 
 ### 3.查看当前目录文件完整的时间格式
@@ -312,12 +314,38 @@ ls -al shadow
 
 ### 6.如何改变文件属性与权限
 
-#### 1.指令
+#### 1.三个指令
 
 ```sh
 chgrp ：改变文件所属群组
 
+change group的缩写
+
 chown ：改变文件拥有者
 
+change owner的缩写
+
 chmod ：改变文件的权限, SUID, SGID, SBIT 等等的特性
+```
+
+#### 2.改变所属群组, chgrp
+
+要被改变的组名必须要在/etc/group文件内存在
+
+```sh
+chgrp users test
+
+将test文件群组权限改成为users（前提users是/etc/group文件内存在）
+
+改变群组权限后，我们可以通过ls -l查看
+```
+![](/images/posts/linux/3.png)
+
+#### 3.改变文件拥有者, chown
+
+用户必须是已经存在/etc/passwd文件中
+```sh
+chown -R bp3 test
+
+将test目录和目录下所有文件递归赋予权限bp3
 ```
