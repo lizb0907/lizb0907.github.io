@@ -70,7 +70,7 @@ public void init(List<IDictBase> l)
 ```
 分析：分别将聊天屏蔽字和命名屏蔽字字符串转为字符串数组，调用load（）方法初始化AC算法敏感词数据结构
 
-### 2.AC算法过滤敏感词汇
+### 2.AC算法初始化构造的串（敏感词汇，过滤符号）
 ```java
 /**
  * @author lizhibiao
@@ -103,6 +103,7 @@ public class DFATest
 ```
 分析:初始化构造"he", "she", "his", "hers"敏感词汇goto表和failure表
 
+### 3.构造goto表
 ```java
 /**
     * 构造goto表
@@ -142,8 +143,9 @@ public boolean initialize(String[] keyWords) {
     return true;
 }
 ```
-分析:构造goto表,并且借鉴了DFA算法的终止状态
+分析:构造goto表比较简单不细分析,注意借鉴了DFA算法的终止状态，因此节点里加入终止状态。
 
+### 4.构造failure表
 ![](/images/posts/mmo_game/3.png)
 ```java
 /**
@@ -152,7 +154,7 @@ public boolean initialize(String[] keyWords) {
 private final void buildFailNode() {
     // 以下构造失效节点
     List<DFANode> queues = new ArrayList<DFANode>();
-    dfaEntrance.failNode = dfaEntrance;//
+    dfaEntrance.failNode = dfaEntrance;
     //状态0是根节点，failure跳转为其自身。深度为1的状态节点failure跳转均为根节点。
     for (Iterator<DFANode> it = dfaEntrance.dfaTransition.values().iterator(); it.hasNext(); ) {
         DFANode node = it.next();
@@ -163,21 +165,30 @@ private final void buildFailNode() {
     DFANode curNode = null;
     DFANode failNode = null;
     while (!queues.isEmpty()) {
-        curNode = queues.remove(0);// 该节点的失效节点已计算
+        // 该节点的失效节点已计算
+        curNode = queues.remove(0);
+        //当前节点的失效节点
         failNode = curNode.failNode;
+        //迭代取的是当前节点的下一节点,所以failNode和curNode就是父节点
         for (Iterator<Map.Entry<Character, DFANode>> it = curNode.dfaTransition.entrySet().iterator(); it
                 .hasNext(); ) {
             Map.Entry<Character, DFANode> nextTrans = it.next();
             Character nextKey = nextTrans.getKey();
             DFANode nextNode = nextTrans.getValue();
-            // 如果父节点的失效节点中有条相同的出边，那么失效节点就是父节点的失效节点
+
+            // 如果父节点的失效节点中没有相同的出边并且父节点不是根节点，那么失效节点就是父节点的失效节点
+            //例如再构建一个串skt,k的失效节点就是父节点的失效节点根节点，然后t的失效节点就是k的失效节点也是根节点
             while (failNode != dfaEntrance && !failNode.dfaTransition.containsKey(nextKey)) {
                 failNode = failNode.failNode;
             }
+
+            //如果父节点的失效节点中有相同的出边,那么当前节点的失效节点就是父节点的下一节点
             nextNode.failNode = failNode.dfaTransition.get(nextKey);
             if (nextNode.failNode == null) {
+                //如果父节点的失效节点中没有相同的出边，那么失效节点直接指向根节点
                 nextNode.failNode = dfaEntrance;
             }
+            //下一节点的节点层数加1
             nextNode.level = curNode.level + 1;
             queues.add(nextNode);// 计算下一层
 
@@ -186,8 +197,123 @@ private final void buildFailNode() {
     }
 }
 ```
-分析:goto表结合failure表
+分析:failure表构造，我们以上面图片来细分析下代码
 
+#### 1.状态0是根节点，failure跳转为其自身。深度为1的状态节点failure跳转均为根节点。
+```java
+for (Iterator<DFANode> it = dfaEntrance.dfaTransition.values().iterator(); it.hasNext(); )
+ {
+    DFANode node = it.next();
+    node.level = 1;
+    queues.add(node);
+    node.failNode = dfaEntrance;// 失效节点指向状态机初始状态
+}
+```
+
+```sh
+迭代的是深度为1的所有节点，将深度为1的全部节点的失效节点指向根节点,然后加入数组。
+```
+
+#### 2.往下看while循环里操作
+```java
+DFANode curNode = null;
+DFANode failNode = null;
+while (!queues.isEmpty()) {
+        // 该节点的失效节点已计算
+        curNode = queues.remove(0);
+        //当前节点的失效节点
+        failNode = curNode.failNode;
+        //迭代取的是当前节点的下一节点,所以failNode和curNode就是父节点
+        for (Iterator<Map.Entry<Character, DFANode>> it = curNode.dfaTransition.entrySet().iterator(); it
+                .hasNext(); ) {
+```
+
+```sh
+这里当前节点curNode,失效节点是已经计算过了，然后迭代取的是当前节点的下一节点,所以failNode和curNode就是父节点
+```
+
+```java
+// 如果父节点的失效节点中没有相同的出边并且父节点不是根节点，那么失效节点就是父节点的失效节点
+// 例如再构建一个串skt,k的失效节点就是父节点的失效节点根节点，然后t的失效节点就是k的失效节点也是根节点
+while (failNode != dfaEntrance && !failNode.dfaTransition.containsKey(nextKey)) {
+    failNode = failNode.failNode;
+}
+```
+```sh
+我们刚开始初始化构造敏感词是不包含skt，假设我们再构造一个skt串，那么k的失效节点就是父节点的失效节点根节点，然后t的失效节点就是k的失效节点也是根节点
+```
+
+```java
+//如果父节点的失效节点中有相同的出边,那么当前节点的失效节点就是父节点的下一节点
+nextNode.failNode = failNode.dfaTransition.get(nextKey);
+if (nextNode.failNode == null) {
+    //如果父节点的失效节点中没有相同的出边，那么失效节点直接指向根节点
+    nextNode.failNode = dfaEntrance;
+}
+```
+```sh
+所以，状态4指向状态1，状态5指向状态2
+```
+
+```java
+//下一节点的节点层数加1
+nextNode.level = curNode.level + 1;
+// 计算下一层
+queues.add(nextNode);
+```
+```sh
+下一节点的节点层数加1，然后加入数组，继续计算下一层的失效节点
+```
+
+#### 3.这里我们以状态3、4、5失效节点构造为例,一看就能明白原来（可以结合断点一步一步看）
+```sh
+首先状态3深度为1，那么其失效节点就是根节点。
+```
+
+```sh
+第一次：
+
+1.CurNode = <h<e,0>> 父节点（注意：这里的0只是代表下一节点长度为0简写方便）
+
+2.failNode = 根节点数据结构
+![](/images/posts/mmo_game/4.png)
+
+3.nextKey = h
+
+4.nextNode = <e, 0>
+
+5.nextNode.failNode = failNode.dfaTransition.get(nextKey);
+
+根节点包含h边，所以nextNode的失效节点就是根节点的下一节点，也就是状态1。
+![](/images/posts/mmo_game/5.png)
+
+所以状态4的失效节点指向状态1。
+
+6.下一节点的节点层数加1，然后加入数组，继续计算下一层的失效节点
+
+<e,0>节点加入数组，下次继续计算
+```
+
+```sh
+第二次：
+
+1.CurNode = <e, 0>
+
+2.failNode 也就是状态1
+![](/images/posts/mmo_game/5.png)
+
+3.nextKey = e
+
+4.nextNode长度为0
+
+5.nextNode.failNode = failNode.dfaTransition.get(nextKey);
+
+因为父节点有相同出边，所以失效节点为下一节点<r<s,0>>,即状态2。
+
+因此，状态5的失效节点指向状态2。
+```
+
+#### 4.根据构建的goto和failure表结构判断是否存在敏感字
 ```java
 public boolean contain(final String inputMsg) 
 {
@@ -196,10 +322,16 @@ public boolean contain(final String inputMsg)
     DFANode _next = null;
     for (int i = 0; i < input.length; i++) {
         final Character _lc = this.toLowerCaseWithoutConfict(input[i]);
+        //这里扩展isIgnore添加一些忽略字符
         if (!isIgnore(_lc)) {
             _next = currentDFANode.dfaTransition.get(_lc);
+            //例如：我的字符是shers,那么先匹配到she，然后跳转失效节点
+            //如果下一节点等于null并且当前节点不是根节点,说明已经到末尾了，例如she的e字符是末尾字符
+            //那么当前节点e就要跳转到失效节点2然后继续重复判断
             while (_next == null && currentDFANode != dfaEntrance) {
+                //那么当前节点直接跳转到失效节点
                 currentDFANode = currentDFANode.failNode;
+                //并且继续判断失效节点的下一节点
                 _next = currentDFANode.dfaTransition.get(_lc);
             }
         }
@@ -218,4 +350,5 @@ public boolean contain(final String inputMsg)
 }
 ```
 分析:检验是否包含敏感词,如果goto表中当前状态对于字符a没有合法跳转，则根据failure表转移状态。
+当前状态可退出，说明匹配上。
 
