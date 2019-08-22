@@ -144,6 +144,7 @@ public boolean initialize(String[] keyWords) {
 ```
 分析:构造goto表,并且借鉴了DFA算法的终止状态
 
+![](/images/posts/mmo_game/3.png)
 ```java
 /**
 * 构造失效节点： 一个节点的失效节点所代表的字符串是该节点所表示它的字符串的最大 部分前缀
