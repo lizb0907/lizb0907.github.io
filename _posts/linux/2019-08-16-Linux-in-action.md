@@ -349,3 +349,101 @@ chown -R bp3 test
 
 将test目录和目录下所有文件递归赋予权限bp3
 ```
+
+```sh
+chown root:root test
+
+test拥有者与群组改回为 root：
+```
+
+```sh
+chown .root test
+
+单纯的修改所属群组权限,这就是小数点用途
+```
+
+```sh
+cp start.sh start_copy.sh
+
+复制start.sh文件并重名命为start_copy.sh（注意只能复制文件并且权限不改变）
+```
+
+#### 4.改变文件权限, chmod
+
+##### 1.数字类型改变文件权限
+```sh
+数字类型改变文件权限:
+
+『-rwxrwxrwx』， 这九个权限是三个三个一组的
+
+各个权限的分数值:r = 4, w = 2, x = 1。
+```
+
+```sh
+[-rwxrwx---] 分数则是：
+
+owner = rwx = 4+2+1 = 7
+
+group = rwx = 4+2+1 = 7
+
+others= --- = 0+0+0 = 0
+
+所以该文件的权限数字就是 770
+```
+
+```sh
+[root@VM_0_8_centos test]# ls -al start.sh
+
+-rw-r--r-- 1 bp3 root 405 Nov 22  2018 start.sh
+
+如果想要将start.sh的权限全部启用，可以输入：
+
+[root@VM_0_8_centos test]# chmod 777 start.sh
+
+[root@VM_0_8_centos test]# ls -al start.sh
+
+-rwxrwxrwx 1 bp3 root 405 Nov 22  2018 start.sh
+```
+
+```sh
+如果要将权限变成『 -rwxr-xr-- 』呢？那么权限的分数就成为 [4+2+1][4+0+1][4+0+0]=754
+```
+##### 2.符号类型改变文件权限
+
+```sh
+基本上就九个权限分别是(1)user (2)group (3)others 三种身份,
+
+那么我们就可以藉由 u, g, o 来代表三种身份的权限！此外， a 则代表 all 亦即全部的身份！
+
+那么读写的权限就可以写成 r, w, x
+
++(加入) 
+
+-(除去)
+
+=(设定)
+```
+
+```sh
+我们要『设定』一个文件的权限成为『-rwxr-xr-x』:
+
+[root@VM_0_8_centos test]# chmod u=rwx,go=rx start.sh 
+
+# 注意！那个 u=rwx,go=rx 是连在一起的，中间并没有任何空格符！
+
+[root@VM_0_8_centos test]# ls -l start.sh
+
+-rwxr-xr-x 1 bp3 root 405 Nov 22  2018 start.sh
+```
+
+```sh
+我不知道原先的文件属性，而我只想要增加start.sh 这个文件的每个人均可写入的权限:
+
+chmod a + w start.sh
+```
+
+```sh
+要拿掉全部人的start.sh可执行权限:
+
+chmod a - x start.sh
+```
