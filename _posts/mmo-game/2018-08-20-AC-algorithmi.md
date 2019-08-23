@@ -71,6 +71,9 @@ public void init(List<IDictBase> l)
 分析：分别将聊天屏蔽字和命名屏蔽字字符串转为字符串数组，调用load（）方法初始化AC算法敏感词数据结构
 
 ### 2.AC算法初始化构造的串（敏感词汇，过滤符号）
+
+这里我们自己举例验证
+
 ```java
 /**
  * @author lizhibiao
