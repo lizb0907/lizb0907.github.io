@@ -565,4 +565,14 @@ drwxr--r--. 2 root root 20 Jun 3 01:00 testing
 『./』代表『本目录』的意思，所以『./run.sh』代表『执行本目录下， 名为 run.sh 的文件』啰！
 ```
 
+### 9.Centos信息输出
+```sh
+uname -r 
+
+查看核心版本
+
+man uname
+
+查看命令
+```
  
