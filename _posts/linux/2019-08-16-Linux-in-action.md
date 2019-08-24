@@ -299,10 +299,26 @@ ls -l --full-time
 ```sh
 ls -al shadow
 
-查看shadow文件的详细属性（前提是在文件目录下）
+查看shadow文件的详细属性（前提是在文件目录下并且是文件！！）
 ```
+### 5.查看“目录”权限命令
+```sh
+查看“目录”权限:
 
-### 5.属性含义
+[root@VM_0_8_centos tmp]# ls -ld testing/
+
+drwxr-xr-x 2 root root 4096 Aug 24 15:02 testing/
+```
+```sh
+一次查看testing目录和testing目录下testing文件权限：
+
+[root@VM_0_8_centos tmp]# ls -ald testing testing/testing 
+
+drwxr-xr-x 2 root root 4096 Aug 24 15:16 testing
+
+-rw------- 1 root root    0 Aug 24 15:16 testing/testing
+```
+### 6.属性含义
 
 所有属性:
 
@@ -311,6 +327,21 @@ ls -al shadow
 权限属性:
 
 ![](/images/posts/linux/2.png)
+
+
+举例：-rw-r--r--
+
+第一个字符代表这个文件是『目录、文件或链接文件等等』：
+
+[ d ]则是目录，例如上表档名为『.config』的那一行；
+
+[ - ]则是文件，例如上表档名为『initial-setup-ks.cfg』那一行；
+
+[ l ]则表示为连结档(link file)； 
+
+[ b ]则表示为装置文件里面的可供储存的接口设备(可随机存取装置)； 
+
+[ c ]则表示为装置文件里面的串行端口设备，例如键盘、鼠标(一次性读取装置)。
 
 ### 6.如何改变文件属性与权限
 
@@ -347,7 +378,7 @@ chgrp users test
 ```sh
 chown -R bp3 test
 
-将test目录和目录下所有文件递归赋予权限bp3
+将test目录和目录下所有文件递归赋予拥有者bp3
 ```
 
 ```sh
@@ -359,7 +390,7 @@ test拥有者与群组改回为 root：
 ```sh
 chown .root test
 
-单纯的修改所属群组权限,这就是小数点用途
+单纯的修改所属群组拥有者,这就是小数点用途
 ```
 
 ```sh
@@ -447,3 +478,91 @@ chmod a + w start.sh
 
 chmod a - x start.sh
 ```
+
+### 7.目录与文件之权限意义
+
+#### 1.例题
+```sh
+有个目录的权限如下所示：
+
+drwxr--r-- 3 root root 4096 Jun 25 08:35 .ssh
+
+d代表是目录，rwx拥有者root权限为读写和执行，r--群组权限只为读，r--其它权限只为读
+
+系统有个账号名称为 vbird，这个账号并没有支持 root 群组，请问 vbird 对这个目录有何权限？是否可切换到此目
+录中？
+
+vbird 对此目录仅具有 r 的权限，因此 vbird 可以查询此目录下的文件名列表。因为 vbird 不具有 x 的权限，
+所以没有这个抽屉的钥匙啦！ 因此 vbird 并不能切换到此目录内！(相当重要的概念！)。
+
+如果你在某目录下不具有 x 的权限， 那么你就无法切换到该目录下（不能cd到此目录），
+也就无法执行该目录下的任何指令，即使你具有该目录的 r 或 w 的权限。
+```
+
+#### 2.例题
+```sh
+假设有个账号名称为 dmtsai，他的家目录在/home/dmtsai/，dmtsai 对此目录具有[rwx]的权限。 若在此目录下有个
+名为 the_root.data 的文件，该文件的权限如下：
+
+-rwx------ 1 root root 4365 Sep 19 23:20 the_root.data
+
+请问 dmtsai 对此文件的权限为何？可否删除此文件？
+
+如上所示，由于 dmtsai 对此文件来说是『others』的身份，因此这个文件他无法读、无法编辑也无法执行，也就
+是说，他无法变动这个文件的内容就是了。
+
+但是由于这个文件在他的家目录下， 他在此目录下具有 rwx 的完整权限，因此对于 the_root.data 这个『档名』来
+说，他是能够『删除』的！ 结论就是，dmtsai 这个用户能够删除 the_root.data 这个文件！
+```
+
+#### 3.例题
+```sh
+[root@study ~]# cd /tmp <==切换工作目录到/tmp
+
+[root@study tmp]# mkdir testing <==建立新目录
+
+[root@study tmp]# chmod 744 testing <==变更权限
+
+[root@study tmp]# touch testing/testing <==建立空的文件
+
+[root@study tmp]# chmod 600 testing/testing <==变更权限
+
+[root@study tmp]# ls -ald testing testing/testing
+
+drwxr--r--. 2 root root 20 Jun 3 01:00 testing
+
+-rw-------. 1 root root 0 Jun 3 01:00 testing/testing
+```
+
+### 8.绝对路径与相对路径
+
+```sh
+绝对路径：由根目录(/)开始写起的文件名或目录名称， 例如 /home/dmtsai/.bashrc； 
+
+相对路径：相对于目前路径的文件名写法。 例如 ./home/dmtsai 或 ../../home/dmtsai/ 等等。反正开头不是 / 
+就属于相对路径的写法
+```
+
+#### 1.当前目录为/home目录下， 如果想要进入/var/log 这个目录，如何操作？
+```sh
+首先我们要清除home和var这两个目录都在根目录下，那么当前在/home目录下，执行../返回上一目录，就是var所在的根目录。
+
+操作方法两种:
+
+1. cd /var/log (absolute)
+
+2. cd ../var/log (relative)
+
+注意:
+
+. ：代表当前的目录，也可以使用 ./ 来表示；
+
+.. ：代表上一层目录，也可以 ../ 来代表。
+```
+
+#### 2.网络文件常常提到类似『./run.sh』之类的数据，这个指令的意义为何？
+```sh
+『./』代表『本目录』的意思，所以『./run.sh』代表『执行本目录下， 名为 run.sh 的文件』啰！
+```
+
+ 
