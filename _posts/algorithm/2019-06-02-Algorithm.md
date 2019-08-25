@@ -591,3 +591,101 @@ public class Kmp
 
 }
 ```
+
+### Manacher
+
+```java
+/**
+ * @author lizhibiao
+ * @date 2019/8/25 14:24
+ */
+public class Manacher
+{
+    public static char[] manacherString(String str)
+    {
+        char[] charArr = str.toCharArray();
+        char[] res = new char[str.length() * 2 + 1];
+        int index = 0;
+        for (int i = 0; i != res.length; i++) {
+            res[i] = (i & 1) == 0 ? '#' : charArr[index++];
+        }
+        return res;
+    }
+
+    public static int maxLcpsLength(String str)
+    {
+        if (str == null || str.length() == 0)
+        {
+            return 0;
+        }
+        //先处理成manacher字符数组也就是包含"#"的字符串
+        char[] charArr = manacherString(str);
+        //每一个数的回文半径长度记录数组
+        int[] pArr = new int[charArr.length];
+        //回文中心索引
+        int pC = -1;
+        //最右回文边界索引
+        int pR = -1;
+
+        int max = Integer.MIN_VALUE;
+        for (int i = 0; i != charArr.length; i++)
+        {
+            //i位置起码的回文半径是多少，不管是什么情况
+            //pR > i说明当前数在回文边界里面
+
+            // Math.min(pArr[2 * pC - i], pR - i), pArr[2 * pC - i]对称点i'的回文半径和pR到i的回文半径谁小就是不用验证的距离
+            // 这个其实就是：
+            //    情况2：如果i‘的回文半径在L和C之间，那么i的回文半径肯定和i’一样长，i回文半径等于pArr[2 * pC - i]
+            //    情况3：如果i‘的回文半径有部分在L和C之外，那么i的回文半径是i到R的距离，即pR - i
+            //    情况2和情况3两者之前取最小
+            //    然后就是情况4：i只需要判断从R的下一个数开始继续往两边扩，i的回文半径和i'的回文半径相等，所以随便取一个就可以
+            //    总结：Math.min(pArr[2 * pC - i], pR - i), pArr[2 * pC - i] 就是pR > i当前数在回文边界里面，最小的不用验证的距离
+
+            //pR <= i说明当前数不在回文边界里面那么需要往两边扩，最小的不用验证的回文半径长度就是自己本身所以就是1
+
+            //pArr[i] = pR > i ? Math.min(pArr[2 * pC - i], pR - i) : 1;
+            // 这个求得就是每个数起码的回文半径长度，现在只是为了code的短减少分支，整合在一起了，否则需要写4个分支
+            pArr[i] = pR > i ? Math.min(pArr[2 * pC - i], pR - i) : 1;
+
+            //继续判断能不能扩，能扩多远？
+            //判断是否越界i + pArr[i] < charArr.length && i - pArr[i] > -1
+            while (i + pArr[i] < charArr.length && i - pArr[i] > -1)
+            {
+                //如果没有越界，判断新的边界是否相等，如果相等回文边界加1
+                //当前数i的索引 + 当前数回文半径长度pArr[i] = 等于回文半径右边界的下一索引，也就是新的右边界
+                //当前数i的索引 - 当前数回文半径长度pArr[i] = 等于回文半径左边界的前一索引，也就是新的左边界
+                if (charArr[i + pArr[i]] == charArr[i - pArr[i]])
+                {
+                    pArr[i]++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            //如果当前数的最右回文半径边界大于当前记录的最右回文边界，需要更新最右回文边界值和回文中心索引
+            if (i + pArr[i] > pR)
+            {
+                pR = i + pArr[i];
+                pC = i;
+            }
+
+            //记录着整个全局的最大回文半径长度值，更新
+            max = Math.max(max, pArr[i]);
+        }
+
+        //#a#b#c#1#2#3#4#3#2#1#a#b#
+        //每一个数的回文半径长度记录包含了“#”符号，所以pArr[i] - 1刚好就是回文子串
+        //例如pArr[13] == 8, 即上面那个数字4的回文半径长度是8，回文半径里包含了“#”符号，减1刚好等于回文子串长度
+        return max - 1;
+    }
+
+    public static void main(String[] args)
+    {
+        String str1 = "abc1234321ab";
+        System.out.println(maxLcpsLength(str1));
+
+    }
+}
+```
