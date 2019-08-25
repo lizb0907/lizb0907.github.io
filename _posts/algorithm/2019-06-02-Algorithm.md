@@ -592,13 +592,15 @@ public class Kmp
 }
 ```
 
+## Manacher(求最长回文子串，时间复杂度O(N))
+
 ### Manacher
 
 ```java
 /**
  * @author lizhibiao
  * @date 2019/8/25 14:24
- */
+ */S
 public class Manacher
 {
     public static char[] manacherString(String str)
