@@ -575,4 +575,105 @@ man uname
 
 查看命令
 ```
+
+## 三:Linux 文件与目录管理
  
+### 1.相对路径的用途
+```sh
+例如：
+
+/cluster/raid/output/taiwan2006/smoke 这个目录，而另一个目录在 /cluster/raid/output/taiwan2006/cctm ，
+
+那么我从第一个要到第二个目录去的话，怎么写比较方便？ 当然是『 cd ../cctm 』
+```
+
+### 2.绝对路径的用途
+
+但是对于档名的正确性来说，绝对路径的正确度要比较好。
+
+### 3.目录相关操作
+```sh
+. 代表此层目录
+
+.. 代表上一层目录 - 代表前一个工作目录
+
+~ 代表『目前用户身份』所在的家目录
+
+~account 代表 account 这个用户的家目录(account 是个账号名称)
+```
+
+```sh
+cd：变换目录
+
+pwd：显示当前目录
+
+mkdir：建立一个新的目录
+
+rmdir：删除一个空的目录
+```
+
+#### 1.mkdir
+
+[root@study ~]# mkdir [-mp] 目录名称
+
+选项与参数：
+
+ -m ：配置文件案的权限喔！直接设定，不需要看预设权限 (umask) 的脸色～
+
+-p ：帮助你直接将所需要的目录(包含上层目录)递归建立起来！
+
+范例：请到/tmp 底下尝试建立数个新目录看看：
+```sh
+[root@study tmp]# mkdir test1/test2/test3/test4
+
+mkdir: cannot create directory ‘test1/test2/test3/test4’: No such file or directory
+
+# 话说，系统告诉我们，没可能建立这个目录啊！就是没有目录才要建立的！见鬼嘛？
+
+[root@study tmp]# mkdir -p test1/test2/test3/test4
+
+# 原来是要建 test4 上层没先建 test3 之故！加了这个 -p 的选项，可以自行帮你建立多层目录！
+```
+
+范例：建立权限为 rwx--x--x 的目录
+```sh
+[root@study tmp]# mkdir -m 711 test2
+
+[root@study tmp]# ls -ld test*
+
+drwxr-xr-x. 2 root root 6 Jun 4 19:03 test
+
+drwxr-xr-x. 3 root root 18 Jun 4 19:04 test1
+
+drwx--x--x. 2 root root 6 Jun 4 19:05 test2
+
+# 仔细看上面的权限部分，如果没有加上 -m 来强制设定属性，系统会使用默认属性。
+```
+
+#### 2.rmdir (删除『空』的目录！注意是“目录”)
+
+[root@study ~]# rmdir [-p] 目录名称
+
+选项与参数： -p ：连同『上层』『空的』目录也一起删除
+
+```sh
+rmdir tick
+
+删除tick空目录
+```
+
+```sh
+如果目录和子目录都是目录并且都为空：
+
+rmdir -p tick/tick1
+
+我们可以连同tick目录下的tick1目录一起全部删除
+```
+
+```sh
+但是如果tick目录下既有目录还有文件，那么整个删除只能用
+
+rm -rf 目录
+
+用这个命令一定要特别小心
+```
