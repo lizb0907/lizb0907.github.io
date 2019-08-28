@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 鸟哥linux实战
-categories: linux
+categories: Linux
 description: 系统学习linux
 keywords: 系统，基础，命令
 ---

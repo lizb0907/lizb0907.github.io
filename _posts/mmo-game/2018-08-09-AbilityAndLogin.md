@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 生活技能、登录开发
-categories: mmo-game
+categories: Mmo-Game
 description: 记录日常开发积累
 keywords: ability,login
 ---

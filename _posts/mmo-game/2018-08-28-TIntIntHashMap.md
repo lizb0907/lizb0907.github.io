@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 游戏里trove4j TIntIntHashMap 迭代优化
-categories: mmo-game
+categories: Mmo-Game
 description: trove4j TIntIntHashMap 迭代优化
 keywords: move，mmo，game
 ---
