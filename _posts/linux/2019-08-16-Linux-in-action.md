@@ -677,3 +677,112 @@ rm -rf 目录
 
 用这个命令一定要特别小心
 ```
+
+### 4.文件与目录管理
+
+#### 1.文件与目录的检视： ls
+```sh
+man ls
+
+查看ls用法
+```
+```sh
+ls -al
+
+所有文件列出来(含属性与隐藏文件)
+
+ls -l
+
+所有文件列出来(含属性不包含隐藏文件)
+```
+```sh
+ls -al --full-time
+
+所有文件详细时间列出来(含属性与隐藏文件)
+```
+
+#### 2.cp (复制文件或目录)
+
+[root@study ~]# cp [-adfilprsu] 来源文件(source) 目标文件(destination)
+
+[root@study ~]# cp [options] source1 source2 source3 .... directory
+
+选项与参数： 
+-a ：相当于 -dr --preserve=all 的意思，至于 dr 请参考下列说明；(常用) 
+
+-d ：若来源文件为链接文件的属性(link file)，则复制链接文件属性而非文件本身；
+
+-f ：为强制(force)的意思，若目标文件已经存在且无法开启，则移除后再尝试一次；
+
+-i ：若目标文件(destination)已经存在时，在覆盖时会先询问动作的进行(常用) -l ：进行硬式连结(hard link)的连结档建立，而非复制文件本身；
+
+-p ：连同文件的属性(权限、用户、时间)一起复制过去，而非使用默认属性(备份常用)； 
+
+-r ：递归持续复制，用于目录的复制行为；(常用) 
+
+-s ：复制成为符号链接文件 (symbolic link)，亦即『快捷方式』文件；
+
+-u ：destination 比 source 旧才更新 destination，或 destination 不存在的情况下才复制。
+
+--preserve=all ：除了 -p 的权限相关参数外，还加入 SELinux 的属性, links, xattr 等也复制了。
+
+最后需要注意的，如果来源档有两个以上，则最后一个目的文件一定要是『目录』才行！
+
+##### 1.将当前目录下的文件拷贝到另一目录下并重命名
+```sh
+[root@VM_0_8_centos test]# ls
+
+start_copy.sh  start.sh
+
+[root@VM_0_8_centos test]# cp start.sh /data/bp3/update.sh
+
+将当前目录下start.sh文件拷贝到bp3下并重名为update.sh
+```
+
+```sh
+[root@VM_0_8_centos test]# cp -i start.sh /data/bp3/update.sh
+
+cp: overwrite ‘/data/bp3/update.sh’? y
+
+[root@VM_0_8_centos test]# 
+
+将当前目录下start.sh文件拷贝到bp3下并重名为update.sh,如果update.sh已经存在bp3目录，是否覆盖？
+```
+
+##### 2.复制整个目录到另一个目录，拥有者会更改为当前账号
+
+cp -r bp3 /data/test/
+```sh
+[root@VM_0_8_centos data]# ls
+
+bp3  test
+
+[root@VM_0_8_centos data]# ls -ld bp3
+
+drwxr-xr-x 2 bp3 root 4096 Aug 28 12:49 bp3
+
+这里的拥有者权限为bp3！
+
+[root@VM_0_8_centos data]# cp -r bp3 /data/test/
+
+我们用root执行递归复制目录命令
+
+[root@VM_0_8_centos data]# ls -ld /data/test/bp3
+
+drwxr-xr-x 2 root root 4096 Aug 28 13:19 /data/test/bp3
+
+所以这里目录的拥有者更改为当前用户root了
+```
+
+cp -a bp3 /data/test/
+```sh
+[root@VM_0_8_centos data]# cp -a bp3 /data/test/
+
+[root@VM_0_8_centos data]# ls -ld /data/test/bp3
+
+drwx--x--x 2 bp3 root 4096 Aug 28 12:49 /data/test/bp3
+
+这里用root权限，执行cp -a 复制目录，但是拥有者权限没有改变
+
+当我们在进行备份的时候，某些需要特别注意的特殊权限文件， 例如密码文件 (/etc/shadow) 以及一些配置文件，就不能直接以 cp 来复制，而必须要加上 -a 或者是 -p 等等可以完整复制文件权限的选项才行！
+```
