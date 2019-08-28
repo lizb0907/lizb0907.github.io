@@ -236,6 +236,6 @@ for (int i = 0, iSize = _state.length; i < iSize; i++)
 
 所以，如果实际场景遍历非常频繁，我们可以不用迭代器迭代，掏出来map的内部数组进行遍历。
 
-同理，TIntObjectMap...等等其他map结构也可以采用这种方式节省内存和提高性能
+同理，TIntObjectMap...等等其他map结构也可以采用这种方式节省内存和减少GC。
 
 
