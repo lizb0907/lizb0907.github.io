@@ -459,6 +459,36 @@ isSwitchingScene如果不为false，那么对象重新加入队列等待。
 
 isSwitchingScene等于false，那么状态标识设置为设置状态WAIT_CLIENT_READY()--等待客户端发送ready，对象加入场景。
 
-### 9.场景基类tick对象
+### 9.tick状态WAIT_CLIENT_READY()---等待客户端发送ready
 
-服务端等待前端发送进入场景,准备完毕请求。ActorTransferModule类下，tick状态WAIT_CLIENT_READY()---等待客户端发送ready。
+```java
+@PacketHandler(PacketIDConst.CSEnterSceneReady)
+public void handleEnterSceneReady(BPLogic.CSEnterSceneReady message, Actor actor)
+{
+    ActorTransferModule transferModule = actor.getTransferModule();
+
+    BPLogic.SCEnterSceneReady.Builder builder = BPLogic.SCEnterSceneReady.newBuilder();
+    builder.setSceneID(message.getSceneID());
+    builder.setLineID(message.getLineID());
+
+    builder.setResult(0);
+    actor.sendPacket(PacketIDConst.SCEnterSceneReady, builder.build());
+
+    transferModule.setSwitchSceneStatus(SwitchSceneStatusEnum.NONE);
+    transferModule.setClientLoadingSceneTime(0);
+
+    AbstractBPScene scene = actor.getScene();
+    if (scene != null)
+    {
+        scene.sendOtherPostionAndMovePath(actor);
+    }
+}
+```
+
+服务端等待前端发送进入场景,准备完毕请求。也就是现在机制是服务端不管客户端是否loading完毕，服务端是先进入场景的。
+
+ActorTransferModule类下，tick状态WAIT_CLIENT_READY()---等待客户端发送ready。
+
+接收到到CSEnterSceneReady协议后，服务端将状态标识为NONE()-----正常状态,然后回复客户端服务端已经准备完毕SCEnterSceneReady。
+
+
