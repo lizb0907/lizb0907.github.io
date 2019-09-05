@@ -492,3 +492,61 @@ ActorTransferModule类下，tick状态WAIT_CLIENT_READY()---等待客户端发�
 接收到到CSEnterSceneReady协议后，服务端将状态标识为NONE()-----正常状态,然后回复客户端服务端已经准备完毕SCEnterSceneReady。
 
 
+## 设置传送出生点最终调用（结合需求：出生点为中心随机半径范围内出生）
+
+```java
+private void tickActorWaittingAdd()
+{
+    ...
+    ...
+    ...
+    // 给前端发送消息
+    BPLogic.SCEnterSceneResponse.Builder response = BPLogic.SCEnterSceneResponse.newBuilder();
+    response.setResult(0);
+    response.setSceneID(sceneID);
+    response.setLine(lineID);
+
+    //出生点为中心随机
+    int switchPosX = transferModule.getSwitchPosX();
+    int switchPosZ = transferModule.getSwitchPosZ();
+    if (getDictSceneDefine() != null && getDictSceneDefine().getBirthRandomRadius() > 0)
+    {
+        int radius = getDictSceneDefine().getBirthRandomRadius();
+        int minX = switchPosX - radius;
+        int maxX = switchPosX + radius;
+        switchPosX = MathUtils.randomRange(minX, maxX);
+        if (switchPosX < 0)
+        {
+            switchPosX = 0;
+        }
+        else if (switchPosX > aoiModule.getWidth())
+        {
+            switchPosX = aoiModule.getWidth();
+        }
+
+        int minZ = switchPosZ - radius;
+        int MaxZ = switchPosZ + radius;
+        switchPosZ = MathUtils.randomRange(minZ, MaxZ);
+        if (switchPosZ < 0)
+        {
+            switchPosZ = 0;
+        }
+        else if (switchPosZ > aoiModule.getHeight())
+        {
+            switchPosZ = aoiModule.getHeight();
+        }
+
+        transferModule.setSwitchPos(switchPosX, transferModule.getSwitchPosY(), switchPosZ);
+    }
+
+    response.setPosX(switchPosX);
+    response.setPosZ(switchPosZ);
+    actor.sendPacket(PacketIDConst.SCEnterSceneResponse, response.build());
+    ...
+    ...
+}
+```
+
+现在服务端各个模块设置出生点，没有整合成一个通用的事件设置，每个模块走自己逻辑导致想在上层实现出生点为中心随机半径范围内出生需求很难。
+
+所以，在最终调用方法里实现。
