@@ -851,8 +851,34 @@ od 以二进制的方式读取文件内容！
 
 ##### 1.cat (concatenate)
 
+[root@study ~]# cat [-AbEnTv]
 
+选项与参数： -A ：相当于 -vET 的整合选项，可列出一些特殊字符而不是空白而已；
 
+-b ：列出行号，仅针对非空白行做行号显示，空白行不标行号！ 
 
+-E ：将结尾的断行字符 $ 显示出来； 
+
+-n ：打印出行号，连同空白行也会有行号，与 -b 的选项不同；
+
+-T ：将 [tab] 按键以 ^I 显示出来；
+
+-v ：列出一些看不出来的特殊字符
+
+cat 是 Concatenate (连续) 的简写， 主要的功能是将一个文件的内容连续的印出在屏幕上面！
+
+范例一：cat -n 打印行号
+```sh
+[root@VM_0_8_centos test]# cat -n start.sh
+     1	#!/bin/sh
+     2	
+     3	export JAVA_HOME=/usr/java/jdk1.8.0_191
+     4	export PATH=$JAVA_HOME/bin:$PATH
+     5	
+     6	cd /data/bp3/test/
+     7	
+     8	nohup java -server -Xms2048m -Xmx2048m -Xss1024K  -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=512m -verbose:gc -Xloggc:gc.log -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -XX:+PrintGCDetails -Dsun.reflect.noInflation=true -cp  resources:BPTest-1.jar com.game2sky.bp.test.MainTest > nohup.out 2>&1 &
+[root@VM_0_8_centos test]# 
+```
 
 
