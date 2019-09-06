@@ -288,6 +288,8 @@ ls
 ls -al  包括显示隐藏文件
 
 ls -l   不显示隐藏文件
+
+ls -lh 可以查看当前路径总共占用多少k
 ```
 
 ### 3.查看当前目录文件完整的时间格式
@@ -786,3 +788,71 @@ drwx--x--x 2 bp3 root 4096 Aug 28 12:49 /data/test/bp3
 
 当我们在进行备份的时候，某些需要特别注意的特殊权限文件， 例如密码文件 (/etc/shadow) 以及一些配置文件，就不能直接以 cp 来复制，而必须要加上 -a 或者是 -p 等等可以完整复制文件权限的选项才行！
 ```
+
+#### 3.rm (移除文件或目录)
+
+[root@study ~]# rm [-fir] 文件或目录
+
+选项与参数： -f ：就是 force 的意思，忽略不存在的文件，不会出现警告讯息；
+
+-i ：互动模式，在删除前会询问使用者是否动作 
+
+-r ：递归删除啊！最常用在目录的删除了！这是非常危险的选项！！！
+
+#### 4.mv (移动文件与目录，或更名)
+
+范例三：再建立两个文件，再全部移动到 /tmp/mvtest2 当中
+
+[root@study tmp]# cp ~/.bashrc bashrc1
+
+[root@study tmp]# cp ~/.bashrc bashrc2
+
+[root@study tmp]# mv bashrc1 bashrc2 mvtest2
+
+注意到这边，如果有多个来源文件或目录，则最后一个目标文件一定是『目录！』
+
+意思是说，将所有的数据移动到该目录的意思！
+
+#### 5.取得路径的文件名与目录名称
+
+[root@VM_0_8_centos test]# basename /data/test/start.sh
+
+start.sh  //取最后的文件名
+
+[root@VM_0_8_centos test]# dirname /data/test/start.sh
+
+/data/test  //取得目录名称
+
+#### 6.文件内容查阅
+
+最常使用的显示文件内容的指令可以说是 cat 与 more 及 less 了！
+
+此外，如果我们要查看一个很大型的文件 (好几百 MB 时)，但是我们只需要后端的几行字而已，用 tail 呀，
+
+此外， tac 这个指令也可以达到这个目的喔
+
+```sh
+cat 由第一行开始显示文件内容
+
+tac 从最后一行开始显示，可以看出 tac 是 cat 的倒着写！
+
+nl 显示的时候，顺道输出行号！
+
+more 一页一页的显示文件内容
+
+less 与 more 类似，但是比 more 更好的是，他可以往前翻页！
+
+head 只看头几行
+
+tail 只看尾巴几行
+
+od 以二进制的方式读取文件内容！
+```
+
+##### 1.cat (concatenate)
+
+
+
+
+
+
