@@ -881,4 +881,28 @@ cat 是 Concatenate (连续) 的简写， 主要的功能是将一个文件的�
 [root@VM_0_8_centos test]# 
 ```
 
+##### 2.tac（反向列显示）
 
+```sh
+[root@study ~]# tac /etc/issue
+Kernel \r on an \m \S
+# 嘿嘿！与刚刚上面的范例一比较，是由最后一行先显示喔！
+```
+
+##### 3.nl (添加行号打印)
+
+```sh
+[root@VM_0_8_centos test]# nl start.sh
+     1	#!/bin/sh
+       
+     2	export JAVA_HOME=/usr/java/jdk1.8.0_191
+     3	export PATH=$JAVA_HOME/bin:$PATH
+       
+     4	cd /data/bp3/test/
+       
+     5	nohup java -server -Xms2048m -Xmx2048m -Xss1024K  -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=512m -verbose:gc -Xloggc:gc.log -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -XX:+PrintGCDetails -Dsun.reflect.noInflation=true -cp  resources:BPTest-1.jar com.game2sky.bp.test.MainTest > nohup.out 2>&1 &
+```
+
+#### 7.可翻页检视
+
+##### 1.more 一页一页翻动
