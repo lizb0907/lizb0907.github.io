@@ -905,4 +905,74 @@ Kernel \r on an \m \S
 
 #### 7.可翻页检视
 
-##### 1.more 一页一页翻动
+##### 1.more （一页一页翻动）
+
+[root@study ~]# more /etc/man_db.con
+
+```sh
+在 more 这个程序的运作过程中，你有几个按键可以按的：
+ 空格键 (space)：代表向下翻一页；
+ Enter ：代表向下翻『一行』；
+ /字符串 ：代表在这个显示的内容当中，向下搜寻『字符串』这个关键词；
+ :f ：立刻显示出文件名以及目前显示的行数；
+ q ：代表立刻离开 more ，不再显示该文件内容。
+ b 或 [ctrl]-b ：代表往回翻页，不过这动作只对文件有用，对管线无用。
+```
+
+##### 2.less (一页一页翻动）
+
+类似
+
+#### 8.资料撷取
+
+head(取出前面几行) 和 tail (取出后面几行)
+
+```sh
+[root@study ~]# tail [-n number] 
+文选项与参数： 
+-n ：后面接数字，代表显示几行的意思
+-f ：表示持续侦测后面所接的档名，要等到按下[ctrl]-c 才会结束 tail 的侦测
+
+持续侦测/var/log/messages 的内容[root@study ~]# tail -f /var/log/messages
+<==要等到输入[crtl]-c 之后才会离开 tail 这个指令的侦测！
+```
+
+##### 1.显示 gc.log 的第 11 到第 20 行呢？
+
+```sh
+在第 11 到第 20 行，那么我取前 20 行，再取后十行，所以结果就是：
+『 head -n 20 gc.log  | tail -n 10 』，这样就可以得到第 11 到第 20 行之间的内容了！
+
+[root@VM_0_8_centos data]# head -n 20 gc.log | tail -n 10
+2019-09-09T17:03:22.105+0800: 3.437: Total time for which application threads were stopped: 0.0001994 seconds, Stopping threads took: 0.0000350 seconds
+{Heap before GC invocations=0 (full 0):
+ garbage-first heap   total 8388608K, used 417792K [0x00000005c0000000, 0x00000005c0404000, 0x00000007c0000000)
+  region size 4096K, 102 young (417792K), 0 survivors (0K)
+ Metaspace       used 15132K, capacity 15722K, committed 15872K, reserved 1062912K
+  class space    used 1821K, capacity 1924K, committed 2048K, reserved 1048576K
+2019-09-09T17:03:22.182+0800: 3.514: [GC pause (G1 Evacuation Pause) (young) 3.514: [G1Ergonomics (CSet Construction) start choosing CSet, _pending_cards: 0, predicted base time: 10.00 ms, remaining time: 190.00 ms, target pause time: 200.00 ms]
+ 3.514: [G1Ergonomics (CSet Construction) add young regions to CSet, eden: 102 regions, survivors: 0 regions, predicted young region time: 6180.99 ms]
+ 3.514: [G1Ergonomics (CSet Construction) finish choosing CSet, eden: 102 regions, survivors: 0 regions, old: 0 regions, predicted pause time: 6190.99 ms, target pause time: 200.00 ms]
+, 0.0420786 secs]
+
+
+这两个指令中间有个管线 (|) 的符号存在，这个管线的意思是：『前面的指令所输出的讯息，请透过管线交由后续
+的指令继续使用』的意思。 所以， gc.log  会将文件内的 20 行取出来，但不输出到屏幕上，而是转交给后续的 tail 指令继续处理。 因此 tail 『不需要接档名』，因为 tail 所需要的数据是来自于 head 处理后的结果！
+```
+
+##### 2.显示 gc.log 的第 11 到第 20 行并带行号
+
+```sh
+通过cat -n 带出行号
+[root@VM_0_8_centos data]# cat -n gc.log | head -n 20 | tail -n 10
+    11	2019-09-09T17:03:22.105+0800: 3.437: Total time for which application threads were stopped: 0.0001994 seconds, Stopping threads took: 0.0000350 seconds
+    12	{Heap before GC invocations=0 (full 0):
+    13	 garbage-first heap   total 8388608K, used 417792K [0x00000005c0000000, 0x00000005c0404000, 0x00000007c0000000)
+    14	  region size 4096K, 102 young (417792K), 0 survivors (0K)
+    15	 Metaspace       used 15132K, capacity 15722K, committed 15872K, reserved 1062912K
+    16	  class space    used 1821K, capacity 1924K, committed 2048K, reserved 1048576K
+    17	2019-09-09T17:03:22.182+0800: 3.514: [GC pause (G1 Evacuation Pause) (young) 3.514: [G1Ergonomics (CSet Construction) start choosing CSet, _pending_cards: 0, predicted base time: 10.00 ms, remaining time: 190.00 ms, target pause time: 200.00 ms]
+    18	 3.514: [G1Ergonomics (CSet Construction) add young regions to CSet, eden: 102 regions, survivors: 0 regions, predicted young region time: 6180.99 ms]
+    19	 3.514: [G1Ergonomics (CSet Construction) finish choosing CSet, eden: 102 regions, survivors: 0 regions, old: 0 regions, predicted pause time: 6190.99 ms, target pause time: 200.00 ms]
+    20	, 0.0420786 secs]
+```
