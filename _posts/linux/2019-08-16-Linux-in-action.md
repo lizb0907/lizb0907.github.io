@@ -976,3 +976,47 @@ head(取出前面几行) 和 tail (取出后面几行)
     19	 3.514: [G1Ergonomics (CSet Construction) finish choosing CSet, eden: 102 regions, survivors: 0 regions, old: 0 regions, predicted pause time: 6190.99 ms, target pause time: 200.00 ms]
     20	, 0.0420786 secs]
 ```
+
+#### 9.修改文件时间或建置新档： touch
+
+##### 1. ls查看文件更新时间
+
+```sh
+[root@VM_0_8_centos data]# ls -l gc.log
+-rw-r--r-- 1 root root 25593736 Sep 11 12:50 gc.log
+
+默认的情况下，ls 显示出来的是该文件的 mtime,
+当该文件的『内容数据』变更时，就会更新这个时间！内容数据指的是文件的内容，而不是文件的属性或
+权限喔！
+```
+
+```sh
+[root@VM_0_8_centos data]# ls -l --time=atime gc.log
+-rw-r--r-- 1 root root 25593736 Sep 11 12:52 gc.log
+
+显示读取过内容时间(atime),
+当『该文件的内容被取用』时，就会更新这个读取时间 (access)。举例来说，我们使用 cat 去读取
+/etc/man_db.conf ， 就会更新该文件的 atime 了。
+```
+
+```sh
+[root@VM_0_8_centos data]# chmod 777 gc.log
+[root@VM_0_8_centos data]# ls -l gc.log
+-rwxrwxrwx 1 root root 25593736 Sep 11 12:50 gc.log
+[root@VM_0_8_centos data]# ls -l --time=ctime gc.log
+-rwxrwxrwx 1 root root 25593736 Sep 17 23:17 gc.log
+
+改变权限后，执行ls -l --time=ctime，时间显示为最新更新时间。
+当该文件的『状态 (status)』改变时，就会更新这个时间，举例来说，像是权限与属性被更改了，都会更新
+这个时间啊。
+```
+
+##### 2.touch可以轻易的修订文件的日期与时间
+```sh
+[root@study ~]# touch [-acdmt] 文件
+选项与参数： -a ：仅修订 access time； 
+-c ：仅修改文件的时间，若该文件不存在则不建立新文件； 
+-d ：后面可以接欲修订的日期而不用目前的日期，也可以使用 --date="日期或时间" 
+-m ：仅修改 mtime ； 
+-t ：后面可以接欲修订的时间而不用目前的时间，格式为[YYYYMMDDhhmm]
+```
