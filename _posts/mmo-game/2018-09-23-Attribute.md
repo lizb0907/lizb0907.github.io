@@ -566,7 +566,12 @@ public static int getAttributeFightForceForOnlySecond(int[] attributes, int voca
     return (int) re;
 }
 ```
-初始化战力，tempArr[等级][key]对应的战力
+初始化战力，tempArr[等级][key]对应的战力。
+
+现在最新的侠客机制，已经不使用这个战力组了。
+
+最新的机制，根据出战侠客计算玩家战力，也就是玩家战力等于出战侠客（队伍战力）。
+
 
 
 ##### 2.计算每个侠客星级带来的属性中B部分的加成（KnightLevelAttribute侠客属性表）
@@ -659,3 +664,258 @@ private static void initAttributePerStar()
 double[] starBValue = AttributeControl.getKnightStarAttributeBDic()[fightVocation][star];
 
 根据侠客职业和星级就可以获取所有星级改变然后属性会变的值。
+
+#### 3.总结
+
+这里的侠客职业，现在修改了，其实就是侠客的属性类型ID（侠客表的attrTypeID）。
+
+当前值就是Attribute表里配置了maxAttr,例如:当前主键id等于1动态当前生命，对应的最大值maxAttr = 2 生命上限(总)。
+
+其它的就是初始化属性组字典:
+
+1.初始化当前值和最大值---AttributeTypeDefine.init(reloadDictClazzs);
+
+2.初始化基础属性（初始化属性控制类），为后面升级，升星，添加，减少，改变侠客基础属性做准备--AttributeControl.init(reloadDictClazzs);
+
+### 2.基础属性改变计算
+
+#### 1.所有侠客基础属性初始化
+
+//目前是全部重新算, 存血和蓝
+initKnightBaseAttribute();
+
+```java
+/**
+* 所有侠客基础属性初始化
+*/
+private void initAllKnightBaseAttribute()
+{
+    ...
+    ...
+    TIntObjectIterator<Knight> iterator = ownKnightMap.iterator();
+    while (iterator.hasNext())
+    {
+        iterator.advance();
+
+        Knight knight = iterator.value();
+        knight.baseAttrOnAddToOwner();
+        ...
+        ...
+    }
+    ...
+    ...
+}
+```
+调用当被添加进阵容的时候, 基本属性的变化方法。
+
+```java
+/**
+* 当被添加进阵容的时候, 基本属性的变化
+*/
+public void baseAttrOnAddToOwner()
+{
+    baseAttrOnLevelChange(0, knightCommonModule.getLevel());
+}
+```
+添加进阵容的时候, 基本属性的变化
+
+```java
+/**
+* 等级改变的时候, 基础属性变化
+*
+* @param beforeLevel 之前的等级
+* @param afterLevel 现在的等级
+*/
+public void baseAttrOnLevelChange(int beforeLevel, int afterLevel)
+{
+    if(beforeLevel == afterLevel)
+    {
+        return;
+    }
+
+    int star = dictKnightStarUp.getStar();
+    
+    //升级重置侠客等级的基本属性
+    resetKnightLevelAttr(beforeLevel, afterLevel);
+
+    if (beforeLevel > 0)
+    {
+        changeKnightBaseAttr_LevelChange(beforeLevel, star, KnightConstant.KNIGHT_MINUS_ATTR_TYPE);
+    }
+    //等级变化计算基础属性
+    changeKnightBaseAttr_LevelChange(afterLevel, star, KnightConstant.KNIGHT_ADD_ATTR_TYPE);
+
+    //计算并刷新推送属性组
+    getAttributeLogic().refreshAttributes();
+}
+```
+升级重置侠客等级的基本属性,等级变化计算基础属性,计算并刷新推送属性组。
+
+```java
+/**
+* 升级重置侠客等级的基本属性
+*
+* @param beforeLevel 之前的等级
+* @param afterLevel 之后的等级
+*/
+private void resetKnightLevelAttr(int beforeLevel, int afterLevel)
+{
+    // 计算DictAttrFactorConfig中的属性
+    if(beforeLevel != afterLevel)
+    {
+        int fightVocation = getFightVocation();
+
+        if(beforeLevel > 0)
+        {
+            int[] attr = AttributeControl.getActorAttributeCountLevelDic()[fightVocation][beforeLevel];
+            getAttributeLogic().minusAttributes(attr);
+        }
+
+        if(afterLevel > 0)
+        {
+            int[] attr = AttributeControl.getActorAttributeCountLevelDic()[fightVocation][afterLevel];
+            getAttributeLogic().addAttributes(attr);
+        }
+    }
+}
+```
+根据主角属性职业统计等级字典(vocation->level->key->value)，先减去之前等级后加上当前等级。
+
+```java
+/**
+* 等级变化基础属性增加
+* @param level
+* @param star 
+* @param type 1减少，2增加
+*/
+private void changeKnightBaseAttr_LevelChange(int level, int star, int type)
+{
+    // 侠客基础属性 = attrFactor + 基础属性（等级X职业系数）*(1+（星级系数+收集加成)/10000.0), 只需要各自算出A的总和, B的总和. 然后带入AttributeTypeEnum的公式计算 
+    // (ABCD含义,Total=(A*(1+B/10000.0)+C)*(1+D/10000.0))   
+    // 其中 attrFactor 部分是策划默认加的, 公式中并未给出
+    int fightVocation = getFightVocation();
+    
+    //根据侠客和等级获取KnightLevelAttribute初始属性
+    int[] attr = DictKnightLevelAttributeData.getInitAttrByLevel(level);
+    double[] levelRatio =  AttributeControl.getKnightAttributeBaseDic()[fightVocation];
+    double[] starBValue = AttributeControl.getKnightStarAttributeBDic()[fightVocation][star];
+    for(int attrType = 0; attrType < AttributeTypeEnum.count; attrType++)
+    {
+        //根据公式计算值
+        int value = calBaseAttr(attr[attrType], levelRatio[attrType], starBValue[attrType]);
+        
+        int collectType = DictKnightCollectAttrData.getCollectTypeByAttribute(attrType);
+        if(collectType > 0)
+        {
+            int collectRatioValue = getMasterActor().getKnightModule().getCollectAttrRatio(collectType);
+            value += KnightModule.calMaxAndCollectTypePartValue(collectRatioValue);
+        }
+        
+        if(value > 0)
+        {
+            if (type == KnightConstant.KNIGHT_MINUS_ATTR_TYPE)
+            {
+                getAttributeLogic().minusOneAttribute(attrType, value);
+            }
+            else
+            {
+                getAttributeLogic().addOneAttribute(attrType, value);
+            }
+        }
+    }
+}
+```
+等级变化基础属性增加计算。
+
+
+```java
+//计算并刷新推送属性组
+getAttributeLogic().refreshAttributes();
+```
+计算并刷新推送属性组。
+
+#### 2.侠客升星基础属性增加计算
+
+```java
+/**
+* 只有某种collectType的collect的值或者star发生变化(新加入某个侠客或者是某个侠客升星), 只需要计算对应collectType的属性值
+* @param level
+* @param star
+* @param collectType
+* @param collectRatioValue
+* @param type
+*/
+private void changeKnightBaseAttr_CollectChange(int level, int star, int collectType, int collectRatioValue, int type)
+{
+    // 侠客基础属性 = attrFactor + 基础属性（等级X职业系数）*(1+（星级系数+收集加成)/10000.0), 只需要各自算出A的总和, B的总和. 然后带入AttributeTypeEnum的公式计算 
+    // (ABCD含义,Total=(A*(1+B/10000.0)+C)*(1+D/10000.0))   
+    // 其中 attrFactor 部分是策划默认加的, 公式中并未给出
+    int fightVocation = getFightVocation();
+    
+    int[] attr = DictKnightLevelAttributeData.getInitAttrByLevel(level);
+    double[] levelRatio =  AttributeControl.getKnightAttributeBaseDic()[fightVocation];
+    double[] starBValue = AttributeControl.getKnightStarAttributeBDic()[fightVocation][star];
+    for(int attrType = 0; attrType < AttributeTypeEnum.count; attrType++)
+    {
+        int value = calBaseAttr(attr[attrType], levelRatio[attrType], starBValue[attrType]);
+        // 加上对应的属性值的Collect加成
+        int ct = DictKnightCollectAttrData.getCollectTypeByAttribute(attrType);
+        if(ct > 0 && ct == collectType)
+        {
+            value += KnightModule.calMaxAndCollectTypePartValue(collectRatioValue);
+        }
+        
+        if(value > 0)
+        {
+            if (type == KnightConstant.KNIGHT_MINUS_ATTR_TYPE)
+            {
+                getAttributeLogic().minusOneAttribute(attrType, value);
+            }
+            else
+            {
+                getAttributeLogic().addOneAttribute(attrType, value);
+            }
+        }
+    }
+}
+```
+
+
+### 3.AttributeUseModule属性逻辑模块
+
+#### 1.初始化
+
+```java
+/**
+* init
+* @param hasAptitude 是否有资质
+*/
+public void init(boolean hasAptitude)
+{
+    this.hasAptitude = hasAptitude;
+    if (hasAptitude)
+    {
+        //如果有资质,int[] aptitudes初始化
+        this.aptitudeAgent = new AptitudeAttributeAgent();
+        this.aptitudeAgent.init();
+    }
+    //属性组
+    attributes = new int[AttributeTypeEnum.count];
+    //改变组(也做临时组)
+    changeList = new int[AttributeTypeEnum.count];
+    //修改标记(只用于当前属性和组属性)
+    attributeModifications = new boolean[AttributeTypeEnum.count];
+    //属性修改标记
+    attributeModified = false;
+    //属性推送标记
+    dispatchDirty = false;
+    //上次的属性组(用于记录两次属性变化事件)
+    lastAttributes = new int[AttributeTypeEnum.count];
+    //上次的属性组(推送用)
+    lastDispatches = new int[AttributeTypeEnum.count];
+    //锁定属性组(不能锁计算因子)
+    lockAttributes = new int[AttributeTypeEnum.count];
+    //锁定属性状态组(不能锁计算因子)
+    lockAttributesStatus = new boolean[AttributeTypeEnum.count];
+}   
+```
