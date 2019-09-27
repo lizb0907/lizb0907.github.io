@@ -677,47 +677,124 @@ double[] starBValue = AttributeControl.getKnightStarAttributeBDic()[fightVocatio
 
 2.初始化基础属性（初始化属性控制类），为后面升级，升星，添加，减少，改变侠客基础属性做准备--AttributeControl.init(reloadDictClazzs);
 
-### 2.基础属性改变计算
+### 2.属性推送基本流程
 
-#### 1.所有侠客基础属性初始化
+#### 1.创建新号属性推送过程
 
-//目前是全部重新算, 存血和蓝
-initKnightBaseAttribute();
+public Actor createActor(BPLoginObject loginObject, String accountID, long actorID,
+                            ActorDataCache actorDataCache, int birthX, int birthY, int birthZ,
+                            int rotation, int defaultKnightID)
+{
+    ...
+    actor.afterLoad();
+
+    ...
+    int result = actor.getKnightModule().addAndUnlockKnight(defaultKnightID);
+    
+}
+
+##### 1.actor.afterLoad()下attribute.afterLoad()
+
+ActorAttributeModule.java
 
 ```java
-/**
-* 所有侠客基础属性初始化
-*/
-private void initAllKnightBaseAttribute()
+@Override
+public void afterLoad()
 {
     ...
     ...
-    TIntObjectIterator<Knight> iterator = ownKnightMap.iterator();
-    while (iterator.hasNext())
-    {
-        iterator.advance();
 
-        Knight knight = iterator.value();
-        knight.baseAttrOnAddToOwner();
-        ...
-        ...
-    }
+    //设置设置战斗职业，属性影响组，资质，都是从缓存在内存里的字典里拿取
+    getActor().getAttributeLogic().setFightVocation(commonModule.getFightVocationIndex());
+    
+    //根据职业和等级从内存中添加基础属性(怒气啥的,AttrFactorConfig表的S组)
+    getActor().getAttributeLogic().addAttributes(AttributeControl.getActorAttributeCountLevelDic()[commonModule.getFightVocationIndex()][commonModule.getLevel()]);
+
+    //刷新属性
+	getActor().getAttributeLogic().refreshAttributes();
+
+    //刷新战力
+	refreshFightForce();	
+    ...
+}
+```
+设置设置战斗职业，属性影响组。
+
+刷新战力。
+
+添加基础属性和刷新属性其实不用在这里操作，因为后面添加侠客了，会重新计算。
+
+
+##### 2.addAndUnlockKnight(defaultKnightID)添加侠客属性计算
+
+actor.getKnightModule().addAndUnlockKnight(defaultKnightID);
+
+```java
+/**
+* 添加并解锁侠客
+* @param knightID 要添加的侠客id
+* @return
+*/
+public int addAndUnlockKnight(int knightID)
+{
+    //这里新new了一个Knight实体，并初始化挂在AbstractCharacter类下的模块(创建属性模块并初始化属性组)
+    Knight knight = addKnight(knightID);
+
+    //添加天赋技能,计算战力,更新基础属性。
+    //回满蓝血霸体（当前属性,需要存库）
+    int result = unlockKnight(knight);
+}
+```
+这里新new了一个Knight实体，并初始化挂在AbstractCharacter类下的模块(所以需要重新创建属性模块并初始化属性组)。
+
+添加天赋技能,计算战力,更新基础属性。回满蓝血霸体（当前属性,需要存库）。
+
+```java
+@Override
+public void init()
+{
+    ...
+    attributeModule = createAttributeLogic();
+
+    this.getAttributeLogic().init(hasAptitude());
+    ...
+}
+```
+
+创建属性模块并初始化属性组长度。
+
+```java
+/**
+* 解锁侠客
+*
+* @param knight     侠客实体
+*/
+private int unlockKnight(Knight knight)
+{
+    ...
+    ...
+    // 计算战力
+    calcKnightFightForce(knight, true);
+
+     //更新基础属性
+    updateBaseAttributeByAddKnight(knightId);
+
+     //回满蓝血霸体
+    knight.getAttributeLogic().fillHpMp();
     ...
     ...
 }
 ```
-调用当被添加进阵容的时候, 基本属性的变化方法。
+所以每次侠客增加会进行如下操作：
 
-```java
-/**
-* 当被添加进阵容的时候, 基本属性的变化
-*/
-public void baseAttrOnAddToOwner()
-{
-    baseAttrOnLevelChange(0, knightCommonModule.getLevel());
-}
-```
-添加进阵容的时候, 基本属性的变化
+更新基础属性（相当于侠客增加）,也可以算是总的属性会随等级变化而变化。
+
+回满蓝血霸体，当前属性，下线需要存库。
+
+#### 2.侠客基础属性的计算和推送
+
+##### 1.等级改变的时候, 基础属性变化
+
 
 ```java
 /**
@@ -728,13 +805,7 @@ public void baseAttrOnAddToOwner()
 */
 public void baseAttrOnLevelChange(int beforeLevel, int afterLevel)
 {
-    if(beforeLevel == afterLevel)
-    {
-        return;
-    }
-
-    int star = dictKnightStarUp.getStar();
-    
+    ...
     //升级重置侠客等级的基本属性
     resetKnightLevelAttr(beforeLevel, afterLevel);
 
@@ -742,14 +813,18 @@ public void baseAttrOnLevelChange(int beforeLevel, int afterLevel)
     {
         changeKnightBaseAttr_LevelChange(beforeLevel, star, KnightConstant.KNIGHT_MINUS_ATTR_TYPE);
     }
-    //等级变化计算基础属性
+    //等级变化综合属性
     changeKnightBaseAttr_LevelChange(afterLevel, star, KnightConstant.KNIGHT_ADD_ATTR_TYPE);
 
     //计算并刷新推送属性组
     getAttributeLogic().refreshAttributes();
 }
 ```
-升级重置侠客等级的基本属性,等级变化计算基础属性,计算并刷新推送属性组。
+升级重置侠客等级的基本属性是根据主角基础属性职业S组,也就是计算DictAttrFactorConfig中的属性。
+
+等级变化综合属性KnightLevelAttribute表，DictAttrFactorConfig表中K组。。。等等
+
+计算并刷新推送属性组。
 
 ```java
 /**
@@ -760,30 +835,30 @@ public void baseAttrOnLevelChange(int beforeLevel, int afterLevel)
 */
 private void resetKnightLevelAttr(int beforeLevel, int afterLevel)
 {
-    // 计算DictAttrFactorConfig中的属性
-    if(beforeLevel != afterLevel)
+    ...
+    ...
+    if(beforeLevel > 0)
     {
-        int fightVocation = getFightVocation();
-
-        if(beforeLevel > 0)
-        {
-            int[] attr = AttributeControl.getActorAttributeCountLevelDic()[fightVocation][beforeLevel];
-            getAttributeLogic().minusAttributes(attr);
-        }
-
-        if(afterLevel > 0)
-        {
-            int[] attr = AttributeControl.getActorAttributeCountLevelDic()[fightVocation][afterLevel];
-            getAttributeLogic().addAttributes(attr);
-        }
+        int[] attr = AttributeControl.getActorAttributeCountLevelDic()[fightVocation][beforeLevel];
+        getAttributeLogic().minusAttributes(attr);
     }
+
+    if(afterLevel > 0)
+    {
+        int[] attr = AttributeControl.getActorAttributeCountLevelDic()[fightVocation][afterLevel];
+        getAttributeLogic().addAttributes(attr);
+    }
+    ...
+    ...
 }
 ```
-根据主角属性职业统计等级字典(vocation->level->key->value)，先减去之前等级后加上当前等级。
+升级重置侠客等级的基本属性是根据主角基础属性职业S组,也就是计算DictAttrFactorConfig中的属性。
+
+先减去之前等级的，加上当前等级的。
 
 ```java
 /**
-* 等级变化基础属性增加
+* 等级变化
 * @param level
 * @param star 
 * @param type 1减少，2增加
@@ -794,9 +869,10 @@ private void changeKnightBaseAttr_LevelChange(int level, int star, int type)
     // (ABCD含义,Total=(A*(1+B/10000.0)+C)*(1+D/10000.0))   
     // 其中 attrFactor 部分是策划默认加的, 公式中并未给出
     int fightVocation = getFightVocation();
-    
+
     //根据侠客和等级获取KnightLevelAttribute初始属性
     int[] attr = DictKnightLevelAttributeData.getInitAttrByLevel(level);
+
     double[] levelRatio =  AttributeControl.getKnightAttributeBaseDic()[fightVocation];
     double[] starBValue = AttributeControl.getKnightStarAttributeBDic()[fightVocation][star];
     for(int attrType = 0; attrType < AttributeTypeEnum.count; attrType++)
@@ -825,97 +901,293 @@ private void changeKnightBaseAttr_LevelChange(int level, int star, int type)
     }
 }
 ```
-等级变化基础属性增加计算。
+等级变化综合属性KnightLevelAttribute表，DictAttrFactorConfig表中K组。。。等等
 
 
-```java
-//计算并刷新推送属性组
-getAttributeLogic().refreshAttributes();
-```
-计算并刷新推送属性组。
+##### 2.设置属性值
 
-#### 2.侠客升星基础属性增加计算
+设置当个属性值
 
 ```java
 /**
-* 只有某种collectType的collect的值或者star发生变化(新加入某个侠客或者是某个侠客升星), 只需要计算对应collectType的属性值
-* @param level
-* @param star
-* @param collectType
-* @param collectRatioValue
-* @param type
+* 设置单个属性值
 */
-private void changeKnightBaseAttr_CollectChange(int level, int star, int collectType, int collectRatioValue, int type)
+public void setOneAttribute(int type, int value)
 {
-    // 侠客基础属性 = attrFactor + 基础属性（等级X职业系数）*(1+（星级系数+收集加成)/10000.0), 只需要各自算出A的总和, B的总和. 然后带入AttributeTypeEnum的公式计算 
-    // (ABCD含义,Total=(A*(1+B/10000.0)+C)*(1+D/10000.0))   
-    // 其中 attrFactor 部分是策划默认加的, 公式中并未给出
-    int fightVocation = getFightVocation();
-    
-    int[] attr = DictKnightLevelAttributeData.getInitAttrByLevel(level);
-    double[] levelRatio =  AttributeControl.getKnightAttributeBaseDic()[fightVocation];
-    double[] starBValue = AttributeControl.getKnightStarAttributeBDic()[fightVocation][star];
-    for(int attrType = 0; attrType < AttributeTypeEnum.count; attrType++)
+    if(value < 0 && AttributeTypeDefine.isMustAttrValuePositive(type))
     {
-        int value = calBaseAttr(attr[attrType], levelRatio[attrType], starBValue[attrType]);
-        // 加上对应的属性值的Collect加成
-        int ct = DictKnightCollectAttrData.getCollectTypeByAttribute(attrType);
-        if(ct > 0 && ct == collectType)
+        value = 0;
+    }
+
+    this.attributes[type] = value;
+
+    //是否需要置脏推送标志
+    makeOneDirty(type);
+}
+```
+增加、减少属性都和设置当个属性值类似，会根据属性类型type判断是否需要置脏推送。
+
+```java
+private void makeOneDirty(int type)
+{
+    ...
+     // 是否需要置脏推送标志，表类配置了通知自己、通知他人、npc广播字段为1，当前属性需要广播
+    boolean[] allMaybeSendSet = AttributeTypeDefine.needDispatchAttrAllSet;
+    if (allMaybeSendSet[type])
+    {
+        this.dispatchDirty = true;
+    }
+
+    // 是否当前属性,如果是当前属性变化了,置相关状态并且return返回，不进行组属性操作。
+    // 那么在getAttributeLogic().refreshAttributes()时会调用countAttributes()计算
+    if (AttributeTypeDefine.isCurrentAttr(type))
+    {
+        this.attributeModifications[type] = true;
+        this.attributeModified = true;
+        return;
+    }
+
+      // 如果当前设置的type属性改变了，type属于组属性，因子变了主属性也需要修改，那么组属性需要重新计算
+    // 如果是组属性和当前属性互斥(组属性就是ABCDEF字段有值)
+    // 通过因子ABCDEF取主属性
+    int groupMainAttr = AttributeTypeDefine.getMainAttrByFactor(type);
+    if (groupMainAttr > 0)
+    {
+        //主属性刚好等于当前type属性,主属性不能set设置，一定是通过其他因子计算出来
+        if (groupMainAttr == type)
         {
-            value += KnightModule.calMaxAndCollectTypePartValue(collectRatioValue);
-        }
-        
-        if(value > 0)
-        {
-            if (type == KnightConstant.KNIGHT_MINUS_ATTR_TYPE)
+            //【属性错误】不能设置组属性主属性也就是总值
+            if(BPGlobals.getInstance().isDebugVersion())
             {
-                getAttributeLogic().minusOneAttribute(attrType, value);
+                BPLog.BP_LOGIC.warn("【属性错误】不能设置组属性主属性也就是总值 [mianAttr] {}",groupMainAttr,new RuntimeException("该异常用于打印堆栈"));
+                return;
             }
-            else
+        }
+
+        // 需要推送,当前属性需要广播
+        if (allMaybeSendSet[groupMainAttr])
+        {
+            this.dispatchDirty = true;
+        }
+
+        // 置脏,那么在getAttributeLogic().refreshAttributes()时会调用countAttributes()计算
+        this.attributeModifications[groupMainAttr] = true;
+        this.attributeModified = true;
+
+        // 如果最大值属性(五项值结果中有一部分是最大值)变了，那么同样修改最大值影响的当前值
+        // type变化导致上面主属性置脏了说明主属性也改变了，那么主属性影响的当前属性也要修改所以置脏
+        int curAttr = AttributeTypeDefine.getCurrentAttrByMaxAttr(groupMainAttr);
+        if (curAttr > 0)
+        {
+            this.attributeModifications[curAttr] = true;
+        }
+
+        // 置脏一级属性影响的二级属性
+        // 如果主属性是一级属性影响的二级属性不为空
+        int[] firstInfluenceSecondArray = this.attributeInfluenceDic[groupMainAttr];
+
+        if (firstInfluenceSecondArray != null)
+        {
+            for (int i = firstInfluenceSecondArray.length - 1; i >= 0; --i)
             {
-                getAttributeLogic().addOneAttribute(attrType, value);
+                int secondAttr = firstInfluenceSecondArray[i];
+
+                //二级属性被一级属性影响，所以置脏重新计算
+                this.attributeModifications[secondAttr] = true;
+
+                // 如果二级属性最大值属性(五项值结果中有一部分是最大值)变了，那么同样修改最大值影响的当前值
+                // 上面置脏说明二级属性修改了，那么二级属性影响也会影响当前属性也要计算
+                int secondCurrentAttr = AttributeTypeDefine.getCurrentAttrByMaxAttr(secondAttr);
+                if (secondCurrentAttr != 0)
+                {
+                    //当前属性为curAttr
+                    this.attributeModifications[curAttr] = true;
+                }
+            }
+        }
+    }
+    ...
+
+}
+```
+是否需要置脏推送标志，表类配置了通知自己、通知他人、npc广播字段为1，当前属性需要广播
+
+是否当前属性,如果是当前属性变化了,置相关状态并且return返回，不进行组属性操作。
+那么在getAttributeLogic().refreshAttributes()时会调用countAttributes()计算。
+
+当前修改的type是组属性，那么主属性需要重新计算，并且主属性影响的当前属性重新计算，
+
+如果主属性又是一级属性，那么受一级属性影响的二级属性需要重新计算，二级属性影响的当前属性也要重新计算，
+
+全部置脏，等待调用getAttributeLogic().refreshAttributes()时重新计算。
+
+
+##### 3.计算并刷新推送属性组
+
+getAttributeLogic().refreshAttributes()
+
+```java
+/**
+* 计算并刷新推送属性组
+*/
+public void refreshAttributes()
+{
+    //属性修改标记要先计算
+    if (this.attributeModified)
+    {
+        countAttributes();
+    }
+
+    //需要推送
+    if (!this.dispatchDirty)
+    {
+        return;
+    }
+
+    this.dispatchDirty = false;
+
+    //属性改变回调,同时推送
+    dispatchAttributeChange();
+}
+```
+
+```java
+/**
+* 计算属性(不推送)
+*/
+public void countAttributes()
+{
+    if (!this.attributeModified)
+    {
+        return;
+    }
+
+    this.attributeModified = false;
+
+    //修改标记(只用于当前属性和组属性)
+    boolean[] attributeModifications = this.attributeModifications;
+
+    // 获取组属性主属性集合
+    int[] groupList = AttributeTypeDefine.getGroupMainAttrList();
+    for (int i = 0, iSize = groupList.length; i < iSize; ++i)
+    {
+        int type = groupList[i];
+
+        //修改了
+        if (attributeModifications[type])
+        {
+            attributeModifications[type] = false;
+
+            // 根据公式计算单个的组属性
+            countOneGroupAttribute(type);
+        }
+    }
+
+    //刷当前属性
+    int[] attributes = this.attributes;
+    //当前值集合，有最大值的当前值集合
+    int[] hasMaxAttrCurrentArray = AttributeTypeDefine.hasMaxAttrCurrentArray;
+    for(int i = 0 , size = hasMaxAttrCurrentArray.length; i < size; i++)
+    {
+        //当前属性索引
+        int curAttr = hasMaxAttrCurrentArray[i];
+
+        int maxAttr = AttributeTypeDefine.getMaxAttrByCurrent(curAttr);
+
+        //修改了
+        if (attributeModifications[curAttr])
+        {
+            //最新的当前值
+            int nowValue = attributes[curAttr];
+            //允许最大值
+            int maxValue = attributes[maxAttr];
+
+            //范围
+            if (nowValue > maxValue)
+            {
+                nowValue = maxValue;
+                attributes[curAttr] = nowValue;
+            }
+
+            if (nowValue < 0  && AttributeTypeDefine.isMustAttrValuePositive(curAttr))
+            {
+                attributes[curAttr] = 0;
             }
         }
     }
 }
 ```
+迭代获取组属性主属性集合，迭代当前值集合（有最大值的属性），然后根据置脏数据判断是否修改了，如果修改了，
 
-
-### 3.AttributeUseModule属性逻辑模块
-
-#### 1.初始化
+重新计算值，这个方法是不进行推送给前端的。
 
 ```java
-/**
-* init
-* @param hasAptitude 是否有资质
-*/
-public void init(boolean hasAptitude)
+//属性改变回调,同时推送
+private void dispatchAttributeChange()
 {
-    this.hasAptitude = hasAptitude;
-    if (hasAptitude)
-    {
-        //如果有资质,int[] aptitudes初始化
-        this.aptitudeAgent = new AptitudeAttributeAgent();
-        this.aptitudeAgent.init();
-    }
-    //属性组
-    attributes = new int[AttributeTypeEnum.count];
-    //改变组(也做临时组)
-    changeList = new int[AttributeTypeEnum.count];
-    //修改标记(只用于当前属性和组属性)
-    attributeModifications = new boolean[AttributeTypeEnum.count];
-    //属性修改标记
-    attributeModified = false;
-    //属性推送标记
-    dispatchDirty = false;
-    //上次的属性组(用于记录两次属性变化事件)
-    lastAttributes = new int[AttributeTypeEnum.count];
+    int type;
+    int value;
+
+    //改变属性数量
+    int num = 0;
+
+    //最新的属性组（最新值已经计算过了）
+    int[] attributes = this.attributes;
     //上次的属性组(推送用)
-    lastDispatches = new int[AttributeTypeEnum.count];
-    //锁定属性组(不能锁计算因子)
-    lockAttributes = new int[AttributeTypeEnum.count];
-    //锁定属性状态组(不能锁计算因子)
-    lockAttributesStatus = new boolean[AttributeTypeEnum.count];
-}   
+    int[] lastAttributes = this.lastDispatches;
+    //上次的属性组(用于记录两次属性变化事件)
+    int[] lastAttributesRecord = this.lastAttributes;
+    //改变组(也做临时组)
+    int[] changeList = this.changeList;
+    // 锁定属性组(不能锁计算因子)
+    int[] lockAttributes = this.lockAttributes;
+    //锁定属性状态组(不能锁计算因子)（这里是指例如帮派货运这种的，调用锁定方法，锁住了速度等等）
+    boolean[] lockAttributesStatus = this.lockAttributesStatus;
+
+    //所有有关推送的属性
+    int[] needDispatchList = AttributeTypeDefine.needDispatchAttrAllList;
+    //迭代需要推送的所有属性
+    for (int i = needDispatchList.length - 1; i >= 0; --i)
+    {
+        //需要推送的属性索引
+        type = needDispatchList[i];
+        //当前值
+        value = attributes[type];
+        if (lockAttributesStatus[type])
+        {
+            //直接让当前值等于之前缓存的锁定属性值（覆盖当前值）
+            value = lockAttributes[type];
+        }
+
+        //如果上次推送给客户端的值和当前value不相等,说明改变了
+        if (lastAttributes[type] != value)
+        {
+            //更新上一次推送组
+            lastAttributes[type] = value;
+            //并记录到改变组changeList
+            changeList[num++] = type;
+        }
+    }
+
+    if (num > 0)
+    {
+        //改变组changeList,数量，上次的属性组(用于记录两次属性变化事件)
+        //属性改变回调
+        onAttributesChange(changeList, num,lastAttributesRecord);
+    }
+
+    //上次的属性组(推送用),拷贝给上次的属性组(用于记录两次属性变化事件)
+    System.arraycopy(lastAttributes,0,lastAttributesRecord,0,lastAttributes.length);
+
+}
 ```
+
+
+
+##### 4.自定义属性推送组？
+
+
+
+
+
+
