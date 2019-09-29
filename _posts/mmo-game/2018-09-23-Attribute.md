@@ -1181,13 +1181,140 @@ private void dispatchAttributeChange()
 
 }
 ```
+迭代需要推送的所有属性。
 
+判断是否锁定属性，锁定属性不变采用锁定的值。
 
+将改变的并且需要推送的属性添加到改变组changeList。
 
-##### 4.自定义属性推送组？
+先看CharacterAttributeUseModule.java下的属性改变回调：
+```java
+ @Override
+protected void onAttributesChange(int[] changeList,int length, int[] lastAttributes)
+{
+    ...
+    血量比例变化事件
+    ...
 
+    // 推送属性变化
+    dispatchAttributesChange(changeList,length,lastAttributes);
+}
+```
 
+```java
+/**
+* 推送属性变化
+* @param changeList
+* @param length
+* @param lastAttributes
+*/
+private void dispatchAttributesChange(int[] changeList,int length, int[] lastAttributes)
+{
+    ...
+    ...
+    //是否需要广播
+    boolean isRadio = true;
+    switch (character.getObjectType())
+    {
+        case KNIGHT:
+        {
+            if(objectID < 0)
+            {
+                //非出战侠客不广播
+                isRadio = false;
+                Knight knight = (Knight) character;
+                knightId = knight.getKnightID();
+            }
+            sets = AttributeTypeDefine.actorOtherRadioSet;
+            selfSets = AttributeTypeDefine.actorSelfRadioSet;
+            break;
+        }
 
+        for (int i = length - 1; i >= 0; --i)
+        {
+            ...
+            ...
+            /需要推送, objectId 小于0的不推送
+            if(isRadio)
+            {
+                //需要广播给其他人(蓝、生命、霸体，速度, 游泳速度)
+                if (sets != null && sets[changeList[i]])
+                {
+                    list.add(changeList[i]);
+                    list.add(getAttribute(changeList[i]));
+                }
+            }
+
+            //需要推送自己
+            if (selfSets != null && selfSets[changeList[i]])
+            {
+                selfList.add(changeList[i]);
+                selfList.add(getAttribute(changeList[i]));
+            }
+            ...
+            ...
+        }
+    }
+    ...
+    ...
+    迭代changeList，推送其他人或者自己
+    ...
+    ...
+}
+```
+这里特别要注意，非出战侠客（objectID < 0）不广播!!!!!!
+
+如果不是出战侠客，那么不会广播给其他人，但是还是会发送自己。（所以，现在服务端自定义属性组，没有意义了是个多余操作。）
+
+出战侠客迭代属性改变组，推送其他人或自己。
+
+再看CharacterAttributeUseModule子类侠客属性展示类KnightAttributeUseModule:
+```java
+/**
+* 属性改变回调(子类没有推送，调用父类的 super.onAttributesChange（）方法推送)
+* @param changeList
+* @param length
+* @param lastAttributes
+*/
+@Override
+protected void onAttributesChange(int[] changeList, int length, int[] lastAttributes)
+{
+    //执行父类的逻辑，但是非出战侠客还是不会推送属性变化
+    super.onAttributesChange(changeList, length, lastAttributes);
+    ...
+    for (int i = length - 1; i >= 0; --i)
+    {
+        //添加到自己的变化的属性组
+        changedAttrs.add(changeList[i]);
+    }
+}
+```
+虽然子类调用了super父类方法，但是非出战侠客还是不会推送属性变化。
+
+将属性变化组添加到自己的变化的属性组，供自己获取调用。
+
+##### 4.自定义属性推送组(因为非出战侠客上面不推送，侠客收集会影响所有侠客，需要自定义属性推送)
+
+```java
+// 给客户端发送一个自定义的属性变化消息
+TIntHashSet changedAttrs = currentKnight.getAttributeLogic().getChangedAttrs();
+if(!changedAttrs.isEmpty())
+{
+    BPStruct.PBKnightAttrChange.Builder b = BPStruct.PBKnightAttrChange.newBuilder();
+    b.setKnightId(currentKnight.getKnightID());
+    TIntIterator iter = changedAttrs.iterator();
+    while(iter.hasNext())
+    {
+        int type = iter.next();
+        b.addValues(type);
+        b.addValues(currentKnight.getAttributeLogic().getAttribute(type));
+    }
+    builder.addKnightAttrChange(b);
+}
+```
+走自己单独的协议，推送属性。
+
+这是一个多余操作，待删除。
 
 
 
