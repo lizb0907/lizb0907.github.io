@@ -1264,5 +1264,81 @@ cd is a shell builtin
 [root@VM_0_8_centos ~]# 
 
 builtin表面cd是Bash内建命令
-
 ```
+
+### 4.如果指令串太长的话，如何使用两行来输出？
+```sh
+[root@VM_0_8_centos data]# cp gc.log \
+> gc.sss
+[root@VM_0_8_centos data]# ls
+bp3  bp3_copy  gc.log  gc.sss  test  test.tar  test.tar.gz
+
+指令太长，让 [Enter] 按键不再具有『开始执行』的功能！好让指令可以继续在下一行输入。
+
+需要特别留意， [Enter] 按键是紧接着反斜杠 (\) 的，两者中间没有其他字符
+```
+
+### 5.请在屏幕上面显示出您的环境变量 HOME 与 MAIL？
+```sh
+[root@VM_0_8_centos data]# echo ${HOME}
+/root
+[root@VM_0_8_centos data]# echo ${MAIL}
+/var/spool/mail/root
+```
+
+### 6.如何『设定』或者是『修改』 某个变量的内容啊？
+```sh
+[dmtsai@study ~]$ echo ${myname}
+<==这里并没有任何数据～因为这个变量尚未被设定！是空的！
+[dmtsai@study ~]$ myname=VBird
+[dmtsai@study ~]$ echo ${myname}
+VBird <==出现了！因为这个变量已经被设定了！
+```
+
+### 7.取消变量的方法为使用 unset
+
+```sh
+『unset 变量名称』例如取消 myname 的设定：
+『unset myname』
+
+[root@VM_0_8_centos data]# echo ${myset}
+
+[root@VM_0_8_centos data]# myset=lizhibiao
+[root@VM_0_8_centos data]# echo ${myset}
+lizhibiao
+[root@VM_0_8_centos data]# unset myset
+[root@VM_0_8_centos data]# echo ${myset}
+
+[root@VM_0_8_centos data]# 
+
+输入unset myset，再输入echo ${myset}，变量为空
+```
+
+### 8.变量的设定规则
+
+```sh
+1. 变量与变量内容以一个等号『=』来连结，如下所示：『myname=VBird』
+
+2. 变量名称只能是英文字母与数字，但是开头字符不能是数字，如下为错误：
+『2myname=VBird』
+
+3. 变量内容若有空格符可使用双引号"" 或单引号''将变量内容结合起来，但
+     o 双引号内的特殊字符如 $ 等，可以保有原本的特性，如下所示：
+     『var="lang is $LANG"』则『echo $var』可得『lang is zh_TW.UTF-8』 
+     o 单引号内的特殊字符则仅为一般字符 (纯文本)，如下所示：
+     『var='lang is $LANG'』则『echo $var』可得『lang is $LANG』
+     
+4. 可用跳脱字符『 \ 』将特殊符号(如 [Enter], $, \, 空格符...)变成一般字符，如：
+『myname=VBird\ Tsai』
+
+5.若该变量为扩增变量内容时，则可用 "$变量名称" 或 ${变量} 累加内容:
+『PATH="$PATH":/home/bin』或『PATH=${PATH}:/home/bin』
+
+6.若该变量需要在其他子程序执行，则需要以 export 来使变量变成环境变量：
+『export PATH』
+
+7. 通常大写字符为系统默认变量，自行设定变量可以使用小写字符
+
+8.在一串指令的执行中，还需要藉由其他额外的指令所提供的信息时，可以使用反单引号『`指令`』或 『$(指 令)』
+```
+
