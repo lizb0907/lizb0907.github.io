@@ -1285,8 +1285,9 @@ bp3  bp3_copy  gc.log  gc.sss  test  test.tar  test.tar.gz
 [root@VM_0_8_centos data]# echo ${MAIL}
 /var/spool/mail/root
 ```
+### 6.变量
 
-### 6.如何『设定』或者是『修改』 某个变量的内容啊？
+#### 1.如何『设定』或者是『修改』 某个变量的内容啊？
 ```sh
 [dmtsai@study ~]$ echo ${myname}
 <==这里并没有任何数据～因为这个变量尚未被设定！是空的！
@@ -1295,7 +1296,7 @@ bp3  bp3_copy  gc.log  gc.sss  test  test.tar  test.tar.gz
 VBird <==出现了！因为这个变量已经被设定了！
 ```
 
-### 7.取消变量的方法为使用 unset
+#### 2.取消变量的方法为使用 unset
 
 ```sh
 『unset 变量名称』例如取消 myname 的设定：
@@ -1314,7 +1315,7 @@ lizhibiao
 输入unset myset，再输入echo ${myset}，变量为空
 ```
 
-### 8.变量的设定规则
+#### 3.变量的设定规则
 
 ```sh
 1. 变量与变量内容以一个等号『=』来连结，如下所示：『myname=VBird』
@@ -1341,4 +1342,16 @@ lizhibiao
 
 8.在一串指令的执行中，还需要藉由其他额外的指令所提供的信息时，可以使用反单引号『`指令`』或 『$(指 令)』
 ```
+
+#### 4.export： 自定义变量转成环境变量
+
+子程序仅会继承父程序的环境变量， 子程序不会继承父程序的自定义变量。
+
+```sh
+[dmtsai@study ~]$ export 变量名称
+
+将自定义变量变成环境变量的话，那就可以让该变量值继续存在于子程序。
+```
+
+
 
