@@ -1353,5 +1353,25 @@ lizhibiao
 将自定义变量变成环境变量的话，那就可以让该变量值继续存在于子程序。
 ```
 
+#### 5.declare / typeset 设置变量的类型
 
+```sh
+[dmtsai@study ~]$ declare [-aixr] variable
+选项与参数： 
+-a ：将后面名为 variable 的变量定义成为数组 (array) 类型 
+-i ：将后面名为 variable 的变量定义成为整数数字 (integer) 类型 
+-x ：用法与 export 一样，就是将后面的 variable 变成环境变量；
+-r ：将变量设定成为 readonly 类型，该变量不可被更改内容，也不能 unset
+```
 
+#### 6.数组 (array) 变量类型
+var[index]=content
+
+```sh
+范例：设定上面提到的 var[1] ～ var[3] 的变数。
+[dmtsai@study ~]$ var[1]="small min"
+[dmtsai@study ~]$ var[2]="big min"
+[dmtsai@study ~]$ var[3]="nice min"
+[dmtsai@study ~]$ echo "${var[1]}, ${var[2]}, ${var[3]}"
+small min, big min, nice min
+```
