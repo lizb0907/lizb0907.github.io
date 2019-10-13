@@ -550,3 +550,25 @@ private void tickActorWaittingAdd()
 现在服务端各个模块设置出生点，没有整合成一个通用的事件设置，每个模块走自己逻辑导致想在上层实现出生点为中心随机半径范围内出生需求很难。
 
 所以，在最终调用方法里实现。
+
+### 1.最后设置坐标添加到场景
+
+// 加入场景事件
+
+onAddBpObject(bpObject);
+
+子类调用，Actor下:
+```sh
+@Override
+public void onAddToScene(AbstractBPScene scene)
+{
+    super.onAddToScene(scene);
+
+    knightModule.onAddToScene(scene);
+
+    // 设置位置
+    setPos(transferModule.getSwitchPosX(),transferModule.getSwitchPosY(),transferModule.getSwitchPosZ());
+    setRotation(transferModule.getSwitchRotation());
+    transferModule.resetPosition();
+}
+```
