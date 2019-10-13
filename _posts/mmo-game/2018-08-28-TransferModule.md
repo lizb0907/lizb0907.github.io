@@ -107,6 +107,9 @@ private int preSwitchSceneRequest(SceneTransferTypeEnum transferType, int sceneI
     //预进入状态,客户端刚刚发起了切换场景请求,等待world返回预进入消息
 	setSwitchSceneStatus(SwitchSceneStatusEnum.PRE_ENTER_SCENE);
     ...
+
+    //设置传送到的点
+    result = setTransferPosition(transferType, sceneID, transferID);
     ...
     //发送世界进行预进入场景请求处理
     service.sendMessage(ServiceManager.getInstance().getWorldService(), preEnterSceneRequest);
@@ -115,6 +118,69 @@ private int preSwitchSceneRequest(SceneTransferTypeEnum transferType, int sceneI
 ```
 各种检查，检查通过后设置当前状态标识为PRE_ENTER_SCENE(), 预进入状态,客户端刚刚发起了切换场景请求,等待world返回预进入消息
 
+在预切换场景时，这里就会先设置下传送坐标点！！
+
+```java
+/**
+* 设置传送目标点
+* @param transferType
+* @param sceneID
+* @param transferID
+*/
+private int setTargetPosition(SceneTransferTypeEnum transferType, int sceneID, int transferID)
+{
+    ...
+    ...
+    switch (transferType)
+    {
+        else
+        {
+            // 不同场景传送,需要读取场景表中的配置
+            DictSceneDefineData sceneAttr = (DictSceneDefineData) DictSceneDefineData.getRecordById(sceneID);
+            if (sceneAttr == null)
+            {
+                return BPErrorCodeEnum.SCENE_SCENE_ATTR_NOT_FOUND;
+            }
+
+            //设置进入场景的坐标
+            if (enterSceneX > 0 && enterSceneY > 0 && enterSceneZ > 0)
+            {
+                switchPosX = enterSceneX;
+                switchPosY = enterSceneY;
+                switchPosZ = enterSceneZ;
+                switchRotation = actor.getRotation();
+
+                enterSceneX = -1;
+                enterSceneY = -1;
+                enterSceneZ = -1;
+            }
+            else
+            {
+                switchPosX = sceneAttr.getTeleX();
+                switchPosY = sceneAttr.getTeleY();
+                switchPosZ = sceneAttr.getTeleZ();
+                int teleRotation = sceneAttr.getTeleRotation();
+                if(teleRotation < 0)
+                {
+                    //角色当前朝向
+                    switchRotation = actor.getRotation();
+                }
+                else
+                {
+                    switchRotation = teleRotation;//朝向
+                }
+            }
+        }
+    }
+    ...
+    ...
+}
+```
+不同场景传送,需要读取场景表中的配置。
+
+如果我们指定了进入场景指定坐标enterSceneX、enterSceneY、enterSceneZ切换场景后会按指定坐标传送，
+
+否则按照SceneDefine表配置的TeleX...
 
 ### 3.等待world返回预进入消息
 
@@ -234,6 +300,17 @@ public void clientStartLoading(int sceneID, int lineID)
 public void switchSceneRequest(int sceneID, int lineID)
 {
     ...
+    AbstractBPScene scene = actor.getScene();
+    if (scene != null)
+    {
+        srcSceneID = scene.getSceneID();
+        srcLineID = scene.getLineID();
+
+        //记录之前场景玩家所在的坐标x、y、z,
+        //最后一次传送所在的(主城/野外)ID
+        //以及朝向
+        recordMainScene();
+    }
     ...
     else
     {
@@ -256,6 +333,10 @@ public void switchSceneRequest(int sceneID, int lineID)
     ...
 }
 ```
+服务器正式切换场景:
+
+调用recordMainScene记录之前的，记录之前场景玩家所在的坐标x、y、z,最后一次传送所在的(主城/野外)ID以及朝向。
+
 调用deleteSafe（）删除玩家，设置状态标识LEAVING_SCENE()--正在离开当前场景，发送世界处理正式进入场景请求。
 
 ### 6.世界线程处理正式进入场景请求
@@ -551,7 +632,7 @@ private void tickActorWaittingAdd()
 
 所以，在最终调用方法里实现。
 
-### 1.最后设置坐标添加到场景
+## 最后设置坐标添加到场景
 
 // 加入场景事件
 
@@ -570,5 +651,80 @@ public void onAddToScene(AbstractBPScene scene)
     setPos(transferModule.getSwitchPosX(),transferModule.getSwitchPosY(),transferModule.getSwitchPosZ());
     setRotation(transferModule.getSwitchRotation());
     transferModule.resetPosition();
+}
+```
+
+## 玩家退出副本需要回到上一个场景的进入坐标点
+
+```sh
+/**
+* 退出副本
+* @param actor
+* @param isForce 是否是强制退出副本,即跳过相关判断
+*/
+public void exitCopyScene(Actor actor, boolean isForce)
+{
+    else
+    {
+        re = actor.getTransferModule().backToMainScene();
+    }
+}
+
+/** 返回主场景 */
+public int backToMainScene()
+{
+    if(lastMainSceneID!=-1)
+    {
+        //取消战斗状态
+        getActor().getFightModule().secedeFight();
+
+        Actor actor = getActor();
+        ActorTransferModule module = actor.getTransferModule();
+
+        //todo 需要看下获取坐标module.getLastEnabledX()的判断
+        module.setEnterPos(module.getLastEnabledX(), module.getLastEnabledY(), module.getLastEnabledZ());
+        int re=preSwitchSceneRequest(lastMainSceneID,-1,getActor().getTeamModule().hasTeam(), false);
+    }
+    ...
+    ...
+}
+```
+我们可以在backToMainScene（）方法里设置离开副本玩家返回上一次所在的坐标点。
+
+需要注意我们这里要调用指定进入场景的坐标setEnterPos（）方法，而不是setSwitchPos（），
+
+因为preSwitchSceneRequest（）预切换场景会设置坐标但是前提是有指定进入场景的坐标，
+
+否则还是根据SceneDefine表配置的坐标。
+
+
+```sh
+//设置进入场景的坐标
+if (enterSceneX > 0 && enterSceneY > 0 && enterSceneZ > 0)
+{
+    switchPosX = enterSceneX;
+    switchPosY = enterSceneY;
+    switchPosZ = enterSceneZ;
+    switchRotation = actor.getRotation();
+
+    enterSceneX = -1;
+    enterSceneY = -1;
+    enterSceneZ = -1;
+}
+else
+{
+    switchPosX = sceneAttr.getTeleX();
+    switchPosY = sceneAttr.getTeleY();
+    switchPosZ = sceneAttr.getTeleZ();
+    int teleRotation = sceneAttr.getTeleRotation();
+    if(teleRotation < 0)
+    {
+        //角色当前朝向
+        switchRotation = actor.getRotation();
+    }
+    else
+    {
+        switchRotation = teleRotation;//朝向
+    }
 }
 ```
