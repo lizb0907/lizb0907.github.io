@@ -1267,6 +1267,7 @@ builtin表面cd是Bash内建命令
 ```
 
 ### 4.如果指令串太长的话，如何使用两行来输出？
+
 ```sh
 [root@VM_0_8_centos data]# cp gc.log \
 > gc.sss
@@ -1365,6 +1366,7 @@ lizhibiao
 ```
 
 #### 6.数组 (array) 变量类型
+
 var[index]=content
 
 ```sh
@@ -1375,3 +1377,11 @@ var[index]=content
 [dmtsai@study ~]$ echo "${var[1]}, ${var[2]}, ${var[3]}"
 small min, big min, nice min
 ```
+
+## 七:shell script （也就是shell脚本）
+
+### 1.执行shell脚本
+
+『./shell.sh 』
+
+『 sh shell.sh 』
