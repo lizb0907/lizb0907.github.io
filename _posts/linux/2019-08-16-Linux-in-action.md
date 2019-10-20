@@ -1211,6 +1211,16 @@ yy 复制游标所在的那一列(常用)。
 u 复原前一个动作。(常用)
 ```
 
+#### 6.取消上一次操作和恢复上一次操作(常用)！！
+
+例如：在vim按下i进行编辑时不小心操作失误，然后按删除键又不好恢复到之前，
+
+这时候我们可以按Esc键到一般模式下:
+
+u   撤销上一步的操作
+
+Ctrl+r 恢复上一步被撤销的操作
+
 ### 2.vim指令
 
 上面的指令同样适用于vim指令，可以简单理解为vim是vi的加强指令，现在我们一般用vim指令。
@@ -1378,6 +1388,137 @@ var[index]=content
 small min, big min, nice min
 ```
 
+### 7.管线命令grep、wc、“-”、cut...
+
+#### 1.cut
+ 这个指令可以将一段讯息的某一段给他『切』出来,以行为单位
+
+```sh
+[dmtsai@study ~]$ cut -d'分隔字符' -f fields <==用于有特定分隔字符
+[dmtsai@study ~]$ cut -c 字符区间 <==用于排列整齐的讯息
+选项与参数： 
+-d ：后面接分隔字符。与 -f 一起使用；
+-f ：依据 -d 的分隔字符将一段讯息分区成为数段，用 -f 取出第几段的意思；
+-c ：以字符 (characters) 的单位取出固定字符区间；
+```
+
+```sh
+[root@VM_0_8_centos data]# echo ${PATH}
+/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/home/java/jdk1.8.0_191/bin:/root/bin
+
+[root@VM_0_8_centos data]# echo ${PATH} | cut -d ':' -f 1
+/usr/local/sbin
+
+将PATH环境变量的值以":"符号切分，并用-f取出第一个，所以显示 /usr/local/sbin
+```
+
+#### 2.grep
+grep 是分析一行讯息
+
+```sh
+[dmtsai@study ~]$ grep [-acinv] [--color=auto] '搜寻字符串' filename
+选项与参数： -a ：将 binary 文件以 text 文件的方式搜寻数据 
+-c ：计算找到 '搜寻字符串' 的次数 
+-i ：忽略大小写的不同，所以大小写视为相同
+-n ：顺便输出行号 
+-v ：反向选择，亦即显示出没有 '搜寻字符串' 内容的那一行！
+```
+```sh
+范例三：在 last 的输出讯息中，只要有 root 就取出，并且仅取第一栏
+[dmtsai@study ~]$ last | grep 'root' |cut -d ' ' -f1
+# 在取出 root 之后，利用上个指令 cut 的处理，就能够仅取得第一栏啰！
+```
+
+#### 3.wc 统计行数
+
+```sh
+[dmtsai@study ~]$ wc [-lwm]
+选项与参数： 
+-l ：仅列出行；
+-w ：仅列出多少字(英文单字)； 
+-m ：多少字符；
+```
+
+```sh
+[root@VM_0_8_centos data]# ls
+bp3  bp3_copy  gc.log  gc.sss  showname.sh  test  test.tar  test.tar.gz
+[root@VM_0_8_centos data]# grep -i 'gc' gc.log | wc -l
+72716
+
+-i忽略大小写搜寻gc.log文件里包含“gc”字符，统计总共的行数为72716行
+```
+#### 4.tr 删除一段讯息当中的文字
+
+```sh
+[dmtsai@study ~]$ tr [-ds] SET1 ...
+选项与参数： 
+-d ：删除讯息当中的 SET1 这个字符串；
+-s ：取代掉重复的字符！
+```
+
+```sh
+将 /etc/passwd 输出的讯息中，将冒号 (:) 删除
+[dmtsai@study ~]$ cat /etc/passwd | tr -d ':'
+```
+
+#### 5 关于减号 - 取用前一个指令的 stdout
+
+```sh
+[root@study ~]# mkdir /tmp/homeback
+[root@study ~]# tar -cvf - /home | tar -xvf - -C /tmp/homeback
+
+『我将 /home 里面的文件给他打包，但打包的数据不是纪录到文件，而是传送
+到 stdout； 经过管线后，将 tar -cvf - /home 传送给后面的 tar -xvf - 』。
+后面的这个 - 则是取用前一个指令的 stdout， 因此，我们就不需要使用 filename 了！
+```
+
+### 8.文件的格式化处理 awk
+
+#### 1.awk 好用的数据处理工具
+
+awk 则比较倾向于一行当中分成数个『字段』来处理。因此，awk 相当的适合处理小型的数据数据。
+
+awk 后面接两个单引号并加上大括号 {} 来设定想要对数据进行的处理动作。
+
+```sh
+[dmtsai@study ~]$ awk '条件类型 1{动作 1} 条件类型 2{动作 2} ...' filename
+
+要取出账号与登入者的 IP ，且账号与 IP 之间以 [tab] 隔开:
+[root@VM_0_8_centos data]# last -n 5
+root     pts/1        116.243.29.106   Sun Oct 20 15:48   still logged in   
+root     pts/0        116.243.29.106   Sun Oct 20 14:04   still logged in   
+root     pts/1        223.20.143.114   Tue Oct  8 23:26 - 02:46  (03:19)    
+root     pts/0        219.143.218.18   Tue Oct  8 21:31 - 03:07  (05:35)    
+root     pts/0        223.20.143.114   Mon Oct  7 16:17 - 22:40  (06:23)    
+
+wtmp begins Thu Nov 15 19:45:28 2018
+[root@VM_0_8_centos data]# last -n 5 | awk '{print $1 "\t" $3}'
+root	116.243.29.106
+root	116.243.29.106
+root	223.20.143.114
+root	219.143.218.18
+root	223.20.143.114
+	
+wtmp	Thu
+[root@VM_0_8_centos data]# 
+
+在 awk 的括号内，每一行的每个字段都是有变量名称的，那就是 $1, $2... 等变量名称。
+
+$0 ，$0 代表『一整列资料』的意思。
+```
+
+#### 2.diff比对两个文件之间的差异
+
+```sh
+[dmtsai@study ~]$ diff [-bBi] from-file to-file
+选项与参数：
+from-file ：一个档名，作为原始比对文件的档名；
+to-file ：一个档名，作为目的比对文件的档名；
+注意，from-file 或 to-file 可以 - 取代，那个 - 代表『Standard input』之意。
+-b ：忽略一行当中，仅有多个空白的差异(例如 "about me" 与 "about me" 视为相同
+-B ：忽略空白行的差异。
+-i ：忽略大小写的不同。
+```
 ## 七:shell script （也就是shell脚本）
 
 ### 1.执行shell脚本
@@ -1385,3 +1526,133 @@ small min, big min, nice min
 『./shell.sh 』
 
 『 sh shell.sh 』
+
+### 2.第一个简单的例子
+
+showname.sh
+```sh
+#!/bin/bash
+# Program:
+# User inputs his first name and last name. Program shows his full name.
+# History:
+# 2019/10/20 lizhibiao First release
+PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
+export PATH
+
+read -p "Pleas input your first nama: " firstname
+read -p "Please input your last name: " lastname # 提示使用者输入
+echo -e  "\nYour full name is: ${firstname} ${lastname}" # 结果由屏幕输出
+```
+
+效果:
+```sh
+[root@VM_0_8_centos data]# sh showname.sh 
+Pleas input your first nama: lizhibiao
+Please input your last name: haha
+
+Your full name is: lizhibiao haha
+[root@VM_0_8_centos data]# 
+```
+
+### 3.数值运算：简单的加减乘除
+
+```sh
+要用户输入两个变量， 然后将两个变量的内容相乘:
+
+PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
+export PATH
+echo -e "You SHOULD input 2 numbers, I will multiplying them! \n"
+read -p "first number: " firstnu
+read -p "second number: " secnu
+total=$((${firstnu}*${secnu}))
+echo -e "\nThe result of ${firstnu} x ${secnu} is ==> ${total}"
+
+建议计算时采用这种格式: var=$((运算内容))
+```
+
+```sh
+你想要计算含有小数点的数据时，其实可以透过 bc
+[dmtsai@study bin]$ echo "123.123*55.9" | bc
+6882.575
+```
+
+```sh
+计算圆周率，让用户输入计算到小数点后几位？
+
+[dmtsai@study bin]$ vim cal_pi.sh
+#!/bin/bash
+# Program:
+# User input a scale number to calculate pi number.
+# History:
+# 2015/07/16 VBird First release
+PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
+export PATH
+echo -e "This program will calculate pi value. \n"
+echo -e "You should input a float number to calculate pi value.\n"
+read -p "The scale number (10~10000) ? " checking
+num=${checking:-"10"} # 开始判断有否有输入数值
+echo -e "Starting calcuate pi value. Be patient."
+time echo "scale=${num}; 4*a(1)" | bc -lq
+
+那个 4*a(1) 是 bc 主动提供的一个计算 pi 的函数，至于 scale 就是要 bc 计算几个
+小数点下位数的意思。当 scale 的数值越大， 代表 pi 要被计算的越精确。
+```
+
+### 4.善用判断式
+
+#### 1.test测试功能
+
+```sh
+常用参数：
+-e 该『档名』是否存在？(常用)
+
+-f 该『档名』是否存在且为文件(file)？(常用)
+
+-d 该『文件名』是否存在且为目录(directory)？(常用)
+```
+
+```sh
+检查 /dmtsai 是否存在:
+
+[dmtsai@study ~]$ test -e /dmtsai
+```
+
+```sh
+ 关于文件的权限侦测：
+ test -r filename 表示可读否
+
+-w 侦测该档名是否存在且具有『可写』的权限？
+
+-x 侦测该档名是否存在且具有『可执行』的权限？
+```
+
+#### 2.利用判断符号 [ ]
+
+注意中括号的两端需要有空格符来分隔。
+
+```sh
+想要知道 ${HOME} 这个变量是否为空:
+[dmtsai@study ~]$ [ -z "${HOME}" ] ; echo $?
+```
+
+```sh
+[root@VM_0_8_centos ~]# echo ${myname}
+
+[root@VM_0_8_centos ~]# myname="lzb"
+[root@VM_0_8_centos ~]# echo ${myname}
+lzb
+
+[root@VM_0_8_centos ~]# [ "$myname" == "lzb" ] && echo "is right"
+is right
+
+判断变量的内容是否为“lzb” 如果是，那么输出“is right”
+```
+
+```sh
+read -p "Please input (Y/N): " yn
+[ "${yn}" == "Y" -o "${yn}" == "y" ] && echo "OK, continue" && exit 0
+[ "${yn}" == "N" -o "${yn}" == "n" ] && echo "Oh, interrupt!" && exit 0
+echo "I don't know what your choice is" && exit 0
+
+这里使用 -o (或) 连结两个判断
+```
