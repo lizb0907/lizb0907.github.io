@@ -1656,3 +1656,154 @@ echo "I don't know what your choice is" && exit 0
 
 这里使用 -o (或) 连结两个判断
 ```
+
+#### 3.条件判断
+
+```sh
+if [ 条件判断式 ]; then
+     当条件判断式成立时，可以进行的指令工作内容；
+fi   <==将 if 反过来写，就成为 fi 啦！结束 if 之意！
+```
+
+```sh
+&& 代表 AND ；
+
+|| 代表 or ；
+```
+
+```sh
+# 多个条件判断 (if ... elif ... elif ... else) 分多种不同情况执行
+if [ 条件判断式一 ]; then
+     当条件判断式一成立时，可以进行的指令工作内容；
+elif [ 条件判断式二 ]; then
+     当条件判断式二成立时，可以进行的指令工作内容；
+else
+     当条件判断式一与二均不成立时，可以进行的指令工作内容；
+fi
+```
+
+#### 4.『 netstat -tuln 』来取得目前主机有启动的服务
+
+```sh
+[dmtsai@study ~]$ netstat -tuln
+Active Internet connections (only servers)
+Proto      Recv-Q Send-Q      Local Address     Foreign Address        State
+tcp            0              0 0.0.0.0:22          0.0.0.0:*          LISTEN
+tcp            0              0 127.0.0.1:25        0.0.0.0:*          LISTEN
+tcp6           0              0 :::22               :::*               LISTEN
+tcp6           0              0 ::1:25              :::*               LISTEN
+udp            0              0 0.0.0.0:123         0.0.0.0:*
+udp            0              0 0.0.0.0:5353        0.0.0.0:*
+udp            0              0 0.0.0.0:44326       0.0.0.0:*
+udp            0              0 127.0.0.1:323       0.0.0.0:*
+udp6           0              0 :::123              :::*
+udp6           0              0 ::1:323             :::*
+#封包格式                     本地 IP:埠口          远程 IP:埠口         是否监听
+
+
+几个常见的 port 与相关网络服务的关系是：
+ 80: WWW
+ 22: ssh
+ 21: ftp
+ 25: mail
+ 111: RPC(远程过程调用)  631: CUPS(打印服务功能)
+```
+
+#### 5.利用 case ..... esac 判断
+```sh
+[dmtsai@study bin]$ vim hello-3.sh
+#!/bin/bash
+# Program:
+# Show "Hello" from $1.... by using case .... esac
+# History:
+# 2015/07/16 VBird First release
+PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
+export PATH
+case ${1} in
+     "hello")
+          echo "Hello, how are you ?"
+          ;;
+     "")
+          echo "You MUST input parameters, ex> {${0} someword}"
+          ;;
+     *) # 其实就相当于通配符，0~无穷多个任意字符之意！
+          echo "Usage ${0} {hello}"
+          ;;
+esac
+```
+
+#### 6.function 功能
+```sh
+function printit(){
+     echo "Your choice is ${1}" # 这个 $1 必须要参考底下指令的下达 
+}
+echo "This program will print your selection !"
+case ${1} in
+     "one")
+          printit 1 # 请注意， printit 指令后面还有接参数！
+          ;;
+     "two")
+          printit 2
+          ;;
+     "three")
+          printit 3
+          ;;
+     *)
+          echo "Usage ${0} {one|two|three}"
+          ;;
+esac
+
+# function 也是拥有内建变量的～他的内建变量与 shell script 很类似， 函数名称代表示 $0 ，
+# 而后续接的变量也是以 $1, $2... 来取代的～
+# 上面print 后面接了1个数字，所以这里就是$1变量，print函数会打印对应的函数。
+```
+
+#### 7.循环 (loop)
+```sh
+while [ condition ] <==中括号内的状态就是判断式
+do   <==do 是循环的开始！
+          程序段落
+done <==done 是循环的结束
+
+# 当 condition 条件成立时，就进行循环，直到condition 的条件不成立才停止
+```
+
+```sh
+until [ condition ]
+do
+          程序段落
+done
+
+# 当 condition 条件成立时，就终止循环， 否则就持续进行循环的程序段
+```
+
+```sh
+for var in con1 con2 con3 ...
+do
+          程序段
+done
+
+# 已经知道要进行几次循环
+
+以上面的例子来说，这个 $var 的变量内容在循环工作时：
+1. 第一次循环时， $var 的内容为 con1 ；
+2. 第二次循环时， $var 的内容为 con2 ；
+3. 第三次循环时， $var 的内容为 con3 ；
+4. ....
+```
+
+```sh
+for (( 初始值; 限制值; 执行步阶 ))
+do
+          程序段
+done
+```
+
+#### 8.shell script 的追踪与 debug
+```sh
+[dmtsai@study ~]$ sh [-nvx] scripts.sh
+选项与参数： 
+-n ：不要执行 script，仅查询语法的问题； 
+-v ：再执行 sccript 前，先将 scripts 的内容输出到屏幕上；
+-x ：将使用到的 script 内容显示到屏幕上，这是很有用的参数！
+```
