@@ -22,6 +22,11 @@ http://www.hyuuhit.com/2018/06/12/Aho%E2%80%93Corasick-Algorithm/
 
 http://www.hankcs.com/program/algorithm/aho-corasick-double-array-trie.html
 
+
+图片来自上面链接：
+
+![](/images/posts/mmo_game/25.png)
+
 ### 1.处理敏感词汇表数据
 
 ![](/images/posts/mmo_game/2.png)
