@@ -118,6 +118,154 @@ System.out.println(map3.get(2));
 前端发来乱序的道具食材id列表，同样先将食材id进行从小到大排序，然后拼接成字符串，以这个字符串，去HashMap里匹配是否有烹饪配方id。
 
 
+后来发现，字符串进行哈希时，每次都需要变量字符串，如果字符串过长，那么效率哈希效率低下。
+
+改为，采用简版AC匹配算法，也就是多级索引:
+
+代码如下：
+
+```java
+/**
+ * 生活技能配方简版AC匹配算法
+ * @author lizhibiao
+ * @date 2019/11/5 20:48
+ */
+public class AbilityFormulaMatchFilter
+{
+    /**
+     * DFA入口
+     */
+    private final AbilityFormulaMatchFilter.DFANode dfaEntrance;
+
+
+    public AbilityFormulaMatchFilter(TIntObjectHashMap<TIntArrayList> formulaDataMap)
+    {
+        dfaEntrance = new DFANode();
+        clear();
+
+        if (null != formulaDataMap)
+        {
+            TIntObjectIterator<TIntArrayList> iterator = formulaDataMap.iterator();
+            while (iterator.hasNext())
+            {
+                iterator.advance();
+
+                //配方id
+                int formulaId = iterator.key();
+                TIntArrayList itemIdList = iterator.value();
+                DFANode currentDFANode = dfaEntrance;
+                int size = itemIdList.size();
+                for (int i = 0; i < size; i++)
+                {
+                    //道具id
+                    int itemId = itemIdList.get(i);
+                    DFANode nextNode = currentDFANode.dfaTransition.get(itemId);
+                    if (null == nextNode)
+                    {
+                        nextNode = new DFANode();
+                        currentDFANode.dfaTransition.put(itemId, nextNode);
+                        //注意这里是下一节点层数加1
+                        nextNode.level = currentDFANode.level + 1;
+                    }
+                    currentDFANode = nextNode;
+                }
+
+                //如果当前节点不等于DFA入口，那么说明是终节点,赋值配方id
+                if (currentDFANode != dfaEntrance)
+                {
+                    currentDFANode.formulaId = formulaId;
+                }
+            }
+        }
+    }
+
+    /**
+     * 根据道具id列表匹配烹饪配方
+     * @param orderItemIdList 有顺序的道具id列表
+     * @return 小于等于0未匹配， 大于0才是匹配成功返回配方id
+     */
+    public int matchFormulaId(List<Integer> orderItemIdList)
+    {
+        if (CollectionUtils.isBlank(orderItemIdList))
+        {
+            return -1;
+        }
+
+        if (null == dfaEntrance)
+        {
+            return -1;
+        }
+
+        //入口节点层数为0
+        DFANode currentDFANode = dfaEntrance;
+        int size = orderItemIdList.size();
+        for (int i = 0; i < size; i++)
+        {
+            int itemId = orderItemIdList.get(i);
+            DFANode nextDFANode = currentDFANode.dfaTransition.get(itemId);
+            if (null != nextDFANode)
+            {
+                //当前节点等于下一节点，继续往下匹配
+                currentDFANode = nextDFANode;
+
+                //如果一直匹配，那么下一节点的层数和列表长度相等表明迭代完毕返回烹饪配方id
+                if (size == currentDFANode.level)
+                {
+                    return currentDFANode.formulaId;
+                }
+            }
+            else
+            {
+                //未匹配
+                return -1;
+            }
+        }
+
+        return -1;
+    }
+
+
+    /**
+     * DFA节点.
+     */
+    private static class DFANode
+    {
+        /**
+         * 配方id
+         */
+        private int formulaId;
+
+        /**
+         * key道具id, value为DFA节点
+         */
+        private final TIntObjectHashMap<AbilityFormulaMatchFilter.DFANode> dfaTransition;
+
+        /**
+         * 节点层数
+         */
+        private int level;
+
+
+        public DFANode()
+        {
+            this.dfaTransition = new TIntObjectHashMap<>();
+            formulaId = 0;
+            level = 0;
+        }
+    }
+
+    /**
+     * 初始化时先调用此函数清理
+     */
+    private void clear()
+    {
+        // 清理入口
+        dfaEntrance.dfaTransition.clear();
+    }
+
+}
+```
+
 ### 4.采集读条广播动作增加玩家朝向
 
 实际场景:当玩家开始读条进行采集时，玩家朝向可能是背对采集物的，所以需要服务调整好朝向并广播给周围玩家。
@@ -401,6 +549,10 @@ public void handleActorBindChannelRequest(AbstractBPScene service, BPActorBindCh
 }
 ```
 分析:注意这里我们可以看到，玩家对象是根据玩家id值直接从内存获取到的。然后调用断线重连成功回调方法。
+
+也就是说，断下重连的时间内，玩家的数据还是保存在服务器内存中没有删除。
+
+断线重连，不会new一个新的Actor对象。
 
 6.断线重连成功回调方法
 ```java
@@ -776,10 +928,19 @@ public void handleLoadActorDataResponse(AbstractBPLoginService loginService, BPL
 {
     ...
     ...
+    //非常注意这里是新new了一个actor对象
     Actor actor = new Actor();
     loginObject.setActor(actor);
     actor.setCoreEntity(loginObject.getCoreEntity());
+    ...
+    ...
+
+    //挂在actor上的所有模块初始化
     actor.init();
+    ....
+    ....
+
+    //挂在actor上的所有模块调用copyFrom方法从db赋值
     boolean result = actor.copyFrom(actorDataCache);
     if (!result)
     {
@@ -791,21 +952,40 @@ public void handleLoadActorDataResponse(AbstractBPLoginService loginService, BPL
 
     actor.initCommonData(loginObject);
 
+    //挂在actor上的所有模块afterLoad()方法处理
     actor.afterLoad();
     actor.setAllModuleModify(false);
 
+    //设置状态load角色数据成功
     loginObject.setFlowStatus(BPLoginFlowStatusEnum.LOAD_ACTOR_DATA_SUCCESS);
     loginObject.getLoginTimeOut().cancelTimeout();
     loginObject.getLoginTimeOut().setTimeOutEnum(BPLoginTimeOutEnum.CLIENT_LOAD_SCENE);
 
     // 释放data cache
     BPGlobals.releaseActorDataCache(actorDataCache);
+
+    // 加载完角色数据后把玩家数据同步给主服
+    loginService.onActorLogin(loginObject);
     ...
     ...
 
 }
 ```
-分析：设置登录成功
+
+分析：load角色数据回复流程:
+
+1.特别注意，玩家下线登录是新new了一个Actor对象，放进内存。
+
+2.挂在actor上的所有模块初始化
+
+3.挂在actor上的所有模块调用copyFrom方法从db赋值
+
+4.挂在actor上的所有模块afterLoad()方法处理
+
+5.设置状态为登录成功
+
+6.同步数据到主服
+
 
 ```java
 **
