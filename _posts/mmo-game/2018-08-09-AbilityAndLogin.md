@@ -481,6 +481,8 @@ public void checkFromMainServer(BPLoginObject object, int loginType, String auth
     uriSb.append(NetConfig.getInstance().getMainServerUrl()).append(HttpApi.CHECK_LOGIN_TOKEN);
     URI uri = URI.create(uriSb.toString());
 
+    //这里new一个去主服检查玩家登录token回调即AbstractHttpResponse(子类ToMainCheckLoginTokenCallback)
+    //发送到主服检验后，主服会会回应一个http响应
     ToMainCheckLoginTokenCallback callback = new ToMainCheckLoginTokenCallback();
     callback.setPlatformUID(object.getAccountID());
 
@@ -491,6 +493,33 @@ public void checkFromMainServer(BPLoginObject object, int loginType, String auth
 }
 ```
 分析：主要就是拼接参数，转json串，发起http请求到主服验证。
+
+
+```java
+AbstractBPLoginService.java下:
+
+/**
+* 处理http
+* login只会发送http请求,所以这里只处理的是http response
+* @param interval
+*/
+private void tickHttp(int interval)
+{
+    // 每个tick处理50条http返回
+    for (int i = 0; i < 50; i++)
+    {
+        BPHttpCallback callback = httpClientModule.pop();
+        if (callback == null)
+        {
+            break;
+        }
+
+        callback.callback();
+    }
+}
+
+```
+进行tick回调处理
 
 
 ```java
@@ -525,6 +554,15 @@ public void loadLoginData(BPLoginObject loginObject)
     ...
     ...
     BPLoadLoginDataReq req = new BPLoadLoginDataReq(MessageIDConst.LOAD_LOGIN_DATA_REQUEST);
+
+    //从角色池里拿出玩家数据对象，这里的角色中间过渡只是调用init将所有model模块集合加入到列表而已，没有数据
+    ActorDataCache dataCache = BPGlobals.getActorDataCache();
+    if (dataCache == null)
+    {
+        BPLog.BP_LOGIN.error("登录 actor cache池已满, account:{}", accountID);
+        loginObject.setException(ObjectExceptionEnum.INTERNAL_ERROR);
+        return;
+    }
     ....
     loginObject.setFlowStatus(BPLoginFlowStatusEnum.LOAD_ACCOUNT_LOGIN_DATA);
     
