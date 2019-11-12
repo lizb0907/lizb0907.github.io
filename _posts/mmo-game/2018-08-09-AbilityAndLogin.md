@@ -699,6 +699,7 @@ public class ToMainCheckLoginTokenCallback extends BPHttpCallback
 /**
 * 向db发送load登录数据请求
 * 如果没有登录数据,会直接创建一个出来(现在注释了)
+* 是说，如果执行load数据库任务时发现没有数据，就创建一个新账号数据出来。
 * @param loginObject
 */
 public void loadLoginData(BPLoginObject loginObject)
@@ -922,6 +923,32 @@ private void tickThreadPool(int interval)
 }
 ```
 分析：tick结果，load数据返回给登录线程
+
+```java
+/**
+ * 角色相关的db任务
+ * Created by wangqiang on 2017/8/29.
+ */
+public class ActorDBTask extends AbstractDBTask
+{
+     @Override
+    public int execute()
+    {
+        else if (operateType == DBOperateTypeEnum.LOGIN)
+        {
+            result = actorDataCache.getAccountLoginModel().load();
+
+            // TODO 压测临时添加
+            BPLog.BP_DB.info("[DB执行线程统计], task:{} load login 时间:{} ms", this.getClass().getName(),
+                    System.currentTimeMillis() - startTime);
+        }
+    }
+}
+```
+当前状态为login状态，那么会调用load方法去取账号数据，如果没有账号数据就会新new一个账号数据出来。
+
+（可能已经修改逻辑）
+
 
 ```java
 public void handleLoadActorDataResponse(AbstractBPLoginService loginService, BPLoadActorDataRsp message)
