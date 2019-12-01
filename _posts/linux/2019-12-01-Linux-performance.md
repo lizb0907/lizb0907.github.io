@@ -86,7 +86,7 @@ sysstat是一个软件包，包含监测系统性能及效率的一组工具:
 sar、sadf、mpstat、iostat、pidstat等，这些工具可以监控系统
 ```
 
-## mpstat 是一个常用的多核 CPU 性能分析工具
+## mpstat 查看 CPU 使用率的变化情况
 
 用来实时查看每个 CPU 的性能指标，以及所有 CPU 的平均指标。
 
@@ -95,7 +95,7 @@ sar、sadf、mpstat、iostat、pidstat等，这些工具可以监控系统
 $ mpstat -P ALL 5 1
 ```
 
-## pidstat 是一个常用的进程性能分析工具
+## pidstat 查看哪个进程导致的
 
 pidstat:
 
