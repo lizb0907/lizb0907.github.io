@@ -1,12 +1,12 @@
 ---
 layout: post
-title: 支付
+title: ConcurrentHashMap源码
 categories: Mmo-Game
-description: mmo游戏里支付系统设计
-keywords: team，mmo，game
+description: ConcurrentHashMap源码学习
+keywords: ConcurrentHashMap，源码，学习
 ---
 
- mmo游戏里支付系统设计和思考
+ConcurrentHashMap源码学习
 
 **目录**
 
