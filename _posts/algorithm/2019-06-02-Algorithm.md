@@ -600,7 +600,7 @@ public class Kmp
 /**
  * @author lizhibiao
  * @date 2019/8/25 14:24
- */S
+ */
 public class Manacher
 {
     public static char[] manacherString(String str)
@@ -690,4 +690,86 @@ public class Manacher
 
     }
 }
+```
+
+## 用栈实现队列（借助一个辅助栈）
+
+### StackImplementQueue
+
+```java
+/**
+ * 两个栈实现队列
+ * @author lizhibiao
+ * @date 2020/1/1 22:27
+ */
+public class StackImplementQueue
+{
+    /**
+     * 数据栈
+     */
+    private Stack<Integer> dataStack = new Stack<>();
+
+    /**
+     * 辅助栈
+     */
+    private Stack<Integer> helpStack = new Stack<>();
+
+    /**
+     * 添加
+     * @param value 值
+     */
+    public void add(int value)
+    {
+        dataStack.push(value);
+    }
+
+    /**
+     * 弹出
+     */
+    public int pop()
+    {
+        if (dataStack.isEmpty() && helpStack.isEmpty())
+        {
+            throw new RuntimeException("Queue pop error!");
+        }
+
+        //只有辅助栈为空，那么就需要一次性把数据栈数据全部倒入
+        if (helpStack.isEmpty())
+        {
+            while (!dataStack.isEmpty())
+            {
+                Integer value = dataStack.pop();
+                helpStack.push(value);
+            }
+        }
+
+        return helpStack.pop();
+    }
+
+    public static void main(String[] args)
+    {
+        StackImplementQueue queue = new StackImplementQueue();
+        queue.add(1);
+        queue.add(2);
+        queue.add(3);
+
+        System.out.println("弹出的值" + queue.pop());
+
+        queue.add(4);
+
+        System.out.println("弹出的值" + queue.pop());
+        System.out.println("弹出的值" + queue.pop());
+        System.out.println("弹出的值" + queue.pop());
+    }
+
+}
+
+```
+
+```sh
+输出:
+弹出的值1
+弹出的值2
+弹出的值3
+弹出的值4
 ```
