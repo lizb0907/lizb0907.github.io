@@ -773,3 +773,98 @@ public class StackImplementQueue
 弹出的值3
 弹出的值4
 ```
+
+## 用队列实现栈
+
+### QueueImplementStack
+
+```java
+
+/**
+ * 用队列实现栈
+ * @author lizhibiao
+ * @date 2020/1/16 20:45
+ */
+public class QueueImplementStack
+{
+    /**
+     * 原数据队列
+     */
+    private Queue<Integer> dataQueue = new LinkedList<>();
+
+    /**
+     * 辅助队列
+     */
+    private Queue<Integer> helpQueue = new LinkedList<>();
+
+    /**
+     * 默认开始弹出数据的长度
+     */
+    private static final int DEFAULT_POP_LENGTH = 1;
+
+
+    /**
+     * 压栈
+     * @param value 值
+     */
+    public void push(int value)
+    {
+        dataQueue.add(value);
+    }
+
+    /**
+     * 出栈
+     * @return 弹出的值，没有返回-1
+     */
+    public int pop()
+    {
+        if (dataQueue.isEmpty())
+        {
+            throw new RuntimeException("dataQueue is empty !");
+        }
+
+        while (dataQueue.size() != DEFAULT_POP_LENGTH)
+        {
+            helpQueue.add(dataQueue.poll());
+        }
+
+        int pollValue = dataQueue.poll();
+
+        swap();
+
+        return pollValue;
+
+    }
+
+    /**
+     * 交换队列引用
+     */
+    private void swap()
+    {
+        Queue<Integer> tmp = helpQueue;
+        helpQueue = dataQueue;
+        dataQueue = tmp;
+    }
+
+
+    public static void main(String[] args)
+    {
+        QueueImplementStack stack = new QueueImplementStack();
+        stack.push(1);
+        stack.push(2);
+        stack.push(3);
+        stack.push(4);
+        stack.push(5);
+
+        System.out.println(stack.pop());
+        System.out.println(stack.pop());
+        System.out.println(stack.pop());
+        System.out.println(stack.pop());
+        System.out.println(stack.pop());
+
+    }
+
+}
+
+
+```
