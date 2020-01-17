@@ -574,6 +574,75 @@ public int reconnectCallback(AbstractCoreEntity coreEntity)
 
 ### 2.玩家登录
 
+#### 1.客户端建立连接
+
+客户端建立连接
+```java
+/**
+ * 处理客户端通信
+ * Created by wangqiang on 2017/9/21.
+ */
+public class ClientHandler extends ChannelInboundHandlerAdapter
+{
+    ...
+    ...
+    //这里spring获取bean每次都是新new一个bean出来
+    AbstractLoginObject object = (AbstractLoginObject) SpringContainer.getInstance().getBeanById("LoginObject");
+    object.setCoreEntity(entity);
+    entity.setInterfaceObject(object);
+
+    //建立新连接 加入到待进入的玩家队列
+    loginInterface.newConnected(object);
+}
+```
+
+客户端建立的连接，加入队列
+```java
+/**
+ * 登录service
+ * Created by wangqiang on 2017/9/21.
+ */
+public abstract class AbstractLoginService extends AbstractService implements InterfaceLogin
+{
+    /**
+     * 待进入的玩家队列
+     */
+    protected ConcurrentLinkedQueue<AbstractLoginObject> toEnterQueue = new ConcurrentLinkedQueue<>();
+
+    @Override
+    public void newConnected(AbstractLoginObject object)
+    {
+        toEnterQueue.add(object);
+    }
+
+}
+```
+
+登录线程tick()处理
+```java
+/**
+ * 登录服务
+ * Created by wangqiang on 2017/7/7.
+ */
+public abstract class AbstractBPLoginService extends AbstractLoginService
+{
+     @Override
+    public void tick(int interval)
+    {
+        ...
+        tickToEnter(interval);
+
+        tickQueueList(interval);
+
+        //处理已连接的输入
+        //解析客户端处理包，反射到对应的处理类
+        tickConnectedInput(interval);
+        ...
+    }
+
+}
+```
+
 1.登录请求
 
 ```java
