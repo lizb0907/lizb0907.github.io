@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Jvm实战、调优记录
+title: 垃圾回收基础
 categories: Jvm
 description: 记录JVM相关，调优实践
 keywords: JVM, GC，调优
