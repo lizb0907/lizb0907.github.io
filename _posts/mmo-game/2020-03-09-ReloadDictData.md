@@ -6,7 +6,7 @@ description: 一键热更表数据,同时检验数据是否正确
 keywords: reload game check
 ---
 
-idea操作打包jar实践
+一键热更表数据
 
 **目录**
 
@@ -14,6 +14,7 @@ idea操作打包jar实践
 {:toc}
 
 ## 几种打包jar的方式？
+
 ```sh
 1.直接用命令行
 
@@ -25,13 +26,13 @@ idea操作打包jar实践
 
 ### 1.idea打包jar
 
-### 1.
+### 2.
+
 ```sh
 
 ```
 
 ## postman发起get和post格式
-
 
 ## jar包动态读取dict.properties配置文件
 
@@ -40,3 +41,7 @@ idea操作打包jar实践
 ## 项目的热更过程梳理
 
 ## 待解决为什么premain函数操作超级耗时？
+
+## classloder加载对象不能出现重复名 
+
+地址：http://zakirrizvi.blogspot.com/2017/11/exception-in-thread-main.html
