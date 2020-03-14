@@ -1,5 +1,5 @@
 ---
-layout: Reload Dict Data
+layout: post
 title: 一键热更表数据并检查数据
 categories: Mmo-Game
 description: 一键热更表数据,同时检验数据是否正确
