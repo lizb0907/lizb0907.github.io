@@ -26,12 +26,6 @@ keywords: reload game check
 
 ### 1.idea打包jar
 
-### 2.
-
-```sh
-
-```
-
 ## postman发起get和post格式
 
 ## jar包动态读取dict.properties配置文件
@@ -44,4 +38,7 @@ keywords: reload game check
 
 ## classloder加载对象不能出现重复名 
 
+```sh
 地址：http://zakirrizvi.blogspot.com/2017/11/exception-in-thread-main.html
+```
+
