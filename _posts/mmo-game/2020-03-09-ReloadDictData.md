@@ -15,16 +15,54 @@ keywords: reload game check
 
 ## 几种打包jar的方式？
 
+### 1.直接用命令行(javaAgent为例)
+
+#### 1.InstrumentationAgent工具类放在自己项目需要用的目录下
+
+![](/images/posts/mmo_game/26.png)
+
+例如：我放在项目的utils下
+
+package com.game2sky.application.utils;
+
+#### 2.然后，我们在同目录下，自己写一个MANIFEST.MF文件
+
+![](/images/posts/mmo_game/27.png)
+
+文件名就是为：MANIFEST.MF
+
+内容如下：
 ```sh
-1.直接用命令行
-
-2.maven
-
-3.idea的buid
+Manifest-Version: 1.0
+Premain-class: com.game2sky.application.utils.InstrumentationAgent
+Main-Class: com.game2sky.application.utils.InstrumentationAgent
 ```
 
+其中要特别注意的是Premain-class和Main-Class的路径都要写对。
 
-### 1.idea打包jar
+#### 3.我们用cmd直接进入该目录下
+
+package com.game2sky.application.utils;
+
+用cmd命令打jar包，命令如下：
+
+```sh
+javac InstrumentationAgent.java
+jar cmf MANIFEST.MF InstrumentationAgent.jar InstrumentationAgent.class
+```
+#### 4.使用
+
+打包好的jar放入本地，在idea的vm启动参数里加入本地存放的路径，或者可以将jar包集成到自己的项目里
+
+ -javaagent:F:\badperson3\InstrumentationAgent.jar
+
+### 2.maven
+
+```sh
+maven这里先不多讲，主要就是在pom里配置。
+```
+
+### 3.idea的buid
 
 ## postman发起get和post格式
 
