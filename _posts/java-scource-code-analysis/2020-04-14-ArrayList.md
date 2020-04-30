@@ -1,7 +1,7 @@
 ---
 layout: post
 title: ArrayList源码分析
-categories: java-scource-code-analysis
+categories: Java-Scource-Code-Analysis
 description: ArrayList源码分析
 keywords: Java,Base
 ---
