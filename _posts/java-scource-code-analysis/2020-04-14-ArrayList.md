@@ -15,8 +15,6 @@ ArrayList源码分析
 
 ## ArrayList类图
 
-我没们看下类的继承关系
-
 ```java
 
 public class ArrayList<E> extends AbstractList<E>
@@ -448,6 +446,58 @@ public int indexOf(Object o) {
 
 ## ArrayList的迭代器
 
+### 1.类的继承关系
+
+```java
+/**
+* Returns an iterator over the elements in this list in proper sequence.
+*
+* <p>The returned iterator is <a href="#fail-fast"><i>fail-fast</i></a>.
+*
+* @return an iterator over the elements in this list in proper sequence
+*/
+public Iterator<E> iterator() {
+     return new Itr();
+}
+```
+ArrayList调用iterator，new一个Itr对象
+
+
+```java
+/**
+* An optimized version of AbstractList.Itr
+*/
+rivate class Itr implements Iterator<E> {
+}
+```
+itr实现Iterator接口,并且该类是一个嵌套类，直接嵌套在ArrayList类下，
+
+嵌套类好处：
+
+1.嵌套类可以访问外部类的所有数据成员和方法，即使它是私有的。
+
+2.提高可读性和可维护性：因为如果一个类只对另外一个类可用，那么将它们放在一起，这更便于理解和维护。
+
+3.提高封装性：给定两个类A和B，如果需要访问A类中的私有成员，则可以将B类封装在A类中，这样不仅可以使得B类可以访问A类中的私有成员，并且可以在外部隐藏B类本身。
+
+4.减少代码的编写量。
+
+
+### 2.类的成员属性
+
+```java
+/**
+* An optimized version of AbstractList.Itr
+*/
+private class Itr implements Iterator<E> {
+    int cursor;       // index of next element to return
+    int lastRet = -1; // index of last element returned; -1 if no such
+    int expectedModCount = modCount;
+}
+```
+cursor 返回下一个元素的索引
+
+lastRet 
 
 ## 本文适当参考下面两篇文章分析:
 
