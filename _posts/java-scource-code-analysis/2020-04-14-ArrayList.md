@@ -460,8 +460,12 @@ public Iterator<E> iterator() {
      return new Itr();
 }
 ```
-ArrayList调用iterator，new一个Itr对象
+ArrayList调用iterator，会new一个Itr对象，这是我们要特别注意的。
 
+···sh
+在游戏服务端开发中，对性能要求特别高，所以我们迭代的时候一般迭代器跌停，
+能用for循环尽量用for循环，可以减少new对象，减少gc频率。
+···
 
 ```java
 /**
