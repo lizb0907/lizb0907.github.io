@@ -501,7 +501,39 @@ private class Itr implements Iterator<E> {
 ```
 cursor 返回下一个元素的索引
 
-lastRet 
+lastRet
+
+expected
+
+expectedModCount 
+
+
+### 3.重要的方法
+
+#### 1. hasNext()
+
+```java
+/**
+* Returns {@code true} if the iteration has more elements.
+* (In other words, returns {@code true} if {@link #next} would
+* return an element rather than throwing an exception.)
+*
+* @return {@code true} if the iteration has more elements
+*/
+boolean hasNext();
+```
+
+如果还有下一个值，那么hasNext返回true。
+
+
+```java
+ public boolean hasNext() {
+    return cursor != size;
+}
+```
+
+
+
 
 ## 本文适当参考下面两篇文章分析:
 
