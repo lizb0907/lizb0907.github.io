@@ -13,7 +13,7 @@ ArrayList源码分析
 * TOC
 {:toc}
 
-## ArrayList类图
+## ArrayList类继承信息
 
 ```java
 
