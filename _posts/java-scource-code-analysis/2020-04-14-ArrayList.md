@@ -456,16 +456,15 @@ public int indexOf(Object o) {
 *
 * @return an iterator over the elements in this list in proper sequence
 */
-public Iterator<E> iterator() {
+public Iterator<E> iterator()
+{
      return new Itr();
 }
 ```
-ArrayList调用iterator，会new一个Itr对象，这是我们要特别注意的。
 
-···sh
-在游戏服务端开发中，对性能要求特别高，所以我们迭代的时候一般迭代器跌停，
-能用for循环尽量用for循环，可以减少new对象，减少gc频率。
-···
+```sh
+ArrayList调用iterator，会new一个Itr对象，这是我们要特别注意的。在游戏服务端开发中，对性能要求特别高，所以我们迭代的时候一般不让用迭代器，可以减少new对象，减少gc频率。
+```
 
 ```java
 /**
@@ -493,19 +492,24 @@ itr实现Iterator接口,并且该类是一个嵌套类，直接嵌套在ArrayLis
 /**
 * An optimized version of AbstractList.Itr
 */
-private class Itr implements Iterator<E> {
+private class Itr implements Iterator<E> 
+{
     int cursor;       // index of next element to return
     int lastRet = -1; // index of last element returned; -1 if no such
     int expectedModCount = modCount;
 }
 ```
-cursor 返回下一个元素的索引
 
-lastRet
+```sh
+cursor： 
+下一个元素的索引
 
-expected
+lastRet：
+根据是否大于0用来判断是否已经移除，防止重复删除。next()获取下一元素时，赋值为当前迭代值的索引，remove() 删除时赋值为-1
 
-expectedModCount 
+expectedModCount：
+预期的版本值等于当前ArrayList版本修改记录值，用于校验迭代器进行迭代操作之前时是判断ArrayList否已经发生修改。
+```
 
 
 ### 3.重要的方法
@@ -513,30 +517,102 @@ expectedModCount
 #### 1. hasNext()
 
 ```java
-/**
-* Returns {@code true} if the iteration has more elements.
-* (In other words, returns {@code true} if {@link #next} would
-* return an element rather than throwing an exception.)
-*
-* @return {@code true} if the iteration has more elements
-*/
-boolean hasNext();
-```
-
-如果还有下一个值，那么hasNext返回true。
-
-
-```java
- public boolean hasNext() {
+ public boolean hasNext()
+{
     return cursor != size;
 }
 ```
 
+下一元素的索引不等于ArrayList的长度，说明还有下一个值，
 
+那么hasNext返回true。
 
+#### 2. next()
 
-## 本文适当参考下面两篇文章分析:
+```java
+ public E next() 
+ {
+     //判断迭代器当前修改的版本与ArrayList版本是否一致
+    checkForComodification(); 
+    //索引已经大于等于ArrayList长度抛异常
+    int i = cursor;
+    if (i >= size)
+        throw new NoSuchElementException();
+    //判断索引是否大于等于ArrayList元素组长度
+    Object[] elementData = ArrayList.this.elementData;
+    if (i >= elementData.length)
+        throw new ConcurrentModificationException();
+    //索引加1，即为下一元素索引
+    cursor = i + 1;
+    //返回迭代元素的值，同时lastRet为当前迭代索引
+    return (E) elementData[lastRet = i];
+}
+```
+next()方法：
 
-https://www.cnblogs.com/leesf456/p/5308358.html
+1.该方法是获取下一元素的值，并为下一次迭代进行准备。
 
-http://cmsblogs.com/?p=108
+2.判断是否有下一元素是判断大于等于是就抛异常，因为ArrayList获取元素时，数组下标是
+
+从0开始的。举个例子，如果列表里一个元素都没有，那么elementData[0],获取元素就会报
+
+错，所以cursor判断时是大于等于。
+
+3.ArrayList用迭代器时，先调用hasNext()判断是否有下一元素，然后再调用next()获取
+
+下一元素的值，防止迭代器报没有元素值异常。
+
+```java
+List<Integer> list = new ArrayList<>();
+Iterator<Integer> iterator = list.iterator();
+iterator.next();
+
+报异常：
+Exception in thread "main" java.util.NoSuchElementException
+	at java.util.ArrayList$Itr.next(ArrayList.java:854)
+	at sources.MyArrayList.main(MyArrayList.java:19)
+```
+
+#### 3. remove()
+
+```java
+public void remove()
+ {
+
+    //小于0，当前值已经被删除，抛异常
+    if (lastRet < 0)
+        throw new IllegalStateException();
+
+    //校验版本
+    checkForComodification();
+
+    try {
+        //调用next()获取下一元素时，lastRet赋值为当前迭代的索引，
+        //ArrayList移除对应索引的值
+        ArrayList.this.remove(lastRet);
+
+        //ArrayList删除一个元素后，长度减1
+        //那么下一个元素索引cursor也需要减1，也就是lastRet值
+        cursor = lastRet;
+
+        //已修改
+        lastRet = -1;
+
+        //ArrayList.this.remove()是modCount版本改变，
+        //expectedModCount版本保一致
+        expectedModCount = modCount;
+    } catch (IndexOutOfBoundsException ex) {
+        throw new ConcurrentModificationException();
+    }
+}
+```
+remove()方法：
+
+1.根据lastRet值是否大于等于0，判断是否已删除，防止重复删除。
+
+2.迭代器移除值，实际上是调用ArrayList的remove移除对应索引的值。
+
+3.ArrayList删除一个元素后，长度减1，那么下一个元素索引cursor也需要减1，也就是
+
+lastRet值。
+
