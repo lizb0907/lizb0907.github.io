@@ -217,6 +217,7 @@ for (int i = 0, iSize = _state.length; i < iSize; i++)
         break;
     }
 
+    //有值才往下走
     if (_state[i] != TIntObjectHashMap.FULL)
     {
         continue;
