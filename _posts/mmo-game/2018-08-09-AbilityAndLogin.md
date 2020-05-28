@@ -313,6 +313,10 @@ message SCCommonStartStripe{
 
 当客户端直接断开时会走断线重连机制，如果是选择退出游戏那么不会走断线重连。
 
+特别注意，这里的断线重连不单单指玩家直接杀进程，例如：手机直接关进程，unity直接重启游戏，
+
+还包括手机切后台，如果玩家在打一个游戏途中，切出去和朋友进行微信聊天，时间长了，游戏并不是一直在后台进行游戏的，超过一定时间后，客户端会开始尝试重连。
+
 #### 一：服务端等待断线，如果玩家没有在规定的时间内重新登录，那么时间到了才会将对象从内存中移除。
 
 大体流程如下：
@@ -567,6 +571,47 @@ public int reconnectCallback(AbstractCoreEntity coreEntity)
     ...
      //发送断线重连的初始化数据
     sendReconnectInitData();
+}
+```
+
+```java
+/**
+* 发送断线重连的初始化数据
+*/
+private void sendReconnectInitData()
+{
+    sendReconnectNoticeToWorld();
+
+    sendInitData();
+
+    sendWorldData();
+
+    teamModule.sendToWorldToGetInit();
+
+    dropModule.sendReconnectData();
+
+    gameModule.sendReconnectData();
+
+    knightFeastModule.sendReconnectData();
+
+    //就绪
+    setRadioReady(true);
+    getScene().doInitScene(this,true);
+}
+```
+
+
+```java
+/**
+* 登录以后第一次推送一些用户的初始数据
+* 本次登录只调用一次
+*
+* 同时断线重连也会调用这个sendInitData()方法，我们平常在该方法里添加的初始化数据，
+* 第一次登录和断线重连都会进行调用。
+*/
+public void sendInitData()
+{
+    
 }
 ```
 分析：这里断线重连成功回调方法里调用初始化数据方法，就是我们平时各个模块对应的初始化数据。
