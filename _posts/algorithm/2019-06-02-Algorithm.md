@@ -865,6 +865,125 @@ public class QueueImplementStack
     }
 
 }
+```
 
+## 转圈打印矩阵
+
+### PrintCircleMatrix
+
+```java
+/**
+ * 转圈打印矩阵
+ *
+ * @author lizhibiao
+ * @date 2020/5/31 9:47
+ */
+public class PrintCircleMatrix
+{
+    public static void main(String[] args)
+    {
+        //构建一个4行5列二维数组
+        int[][] arrData = buildArrData(4, 5);
+        System.out.println(Arrays.deepToString(arrData));
+
+        int startLineIndex = 0;
+        int startColumnIndex = 0;
+        int endLineIndex = arrData.length - 1;
+        int endColumnIndex = arrData[0].length - 1;
+
+//        printOneCircle(arrData, 0, 0, 0, 5);
+//        printOneCircle(arrData, 0, 0, 4, 0);
+
+        //一层一层打印
+        while (startLineIndex <= endLineIndex
+                || startColumnIndex <= endColumnIndex)
+        {
+            printOneCircle(arrData, startLineIndex++, startColumnIndex++, endLineIndex--, endColumnIndex--);
+        }
+
+
+    }
+
+    /**
+     * 构建一个nLine行nColumn列的二维数组, 值累加
+     * @param nLine 行
+     * @param nColumn 列
+     * @return 返回数组
+     */
+    private static int[][] buildArrData(int nLine, int nColumn)
+    {
+        int value = 1;
+        int[][] arr = new int[nLine][nColumn];
+        //行
+        int line = arr.length;
+        for (int i = 0; i < line; i++)
+        {
+            //列
+            int column = arr[i].length;
+            for (int j = 0; j < column; j++)
+            {
+                arr[i][j] = value++;
+            }
+        }
+
+        return arr;
+    }
+
+    /**
+     * 打印一圈的值
+     * @param arr 传入的数组
+     * @param startLineIndex 起始行索引
+     * @param startColumnIndex 起始列索引
+     * @param endLineIndex 终止行索引
+     * @param endColumnIndex 终止列索引
+     */
+    private static void printOneCircle(int[][] arr, int startLineIndex, int startColumnIndex,
+                                       int endLineIndex, int endColumnIndex)
+    {
+        //只有一行
+        if (startLineIndex == endLineIndex)
+        {
+            for (int i = startColumnIndex; i < endColumnIndex; i++)
+            {
+                System.out.print(arr[startLineIndex][i] + " ");
+            }
+
+            return;
+        }
+
+        //只有一列
+        if (startColumnIndex == endColumnIndex)
+        {
+            for (int i = startLineIndex; i < endLineIndex; i++)
+            {
+                System.out.print(arr[i][startColumnIndex] + " ");
+            }
+            return;
+        }
+
+        //其它情况,打印圈
+        for (int i = startColumnIndex; i < endColumnIndex; i++)
+        {
+            System.out.print(arr[startLineIndex][i] + " ");
+        }
+
+        for (int i = startLineIndex; i < endLineIndex; i++)
+        {
+            System.out.print(arr[i][endColumnIndex] + " ");
+        }
+
+        for (int i = endColumnIndex; i > startColumnIndex; i--)
+        {
+            System.out.print(arr[endLineIndex][i] + " ");
+        }
+
+        for (int i = endLineIndex; i > startLineIndex; i--)
+        {
+            System.out.print(arr[i][startColumnIndex] + " ");
+        }
+
+    }
+}
 
 ```
+
