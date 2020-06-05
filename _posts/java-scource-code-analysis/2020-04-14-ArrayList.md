@@ -1,12 +1,12 @@
 ---
 layout: post
-title: ArrayList源码分析
+title: ArrayList源码分析(JDK1.8)
 categories: Java-Scource-Code-Analysis
 description: ArrayList源码分析
 keywords: Java,Base
 ---
 
-ArrayList源码分析
+ArrayList源码分析(JDK1.8)
 
 **目录**
 
