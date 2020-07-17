@@ -352,9 +352,9 @@ public abstract class AbstractBPCopySceneFight<Character extends AbstractCharact
 ```
 主要是所有子类公用的，记录流程（等待进入，倒计时，开始），一些统计。
 
+```sh
 <Character extends AbstractCharacter>
 
-```sh
 public void setBeChallengerCharacter(Character beChallengerCharacter)
 {
     this.beChallengerCharacter = beChallengerCharacter;
@@ -364,6 +364,7 @@ setBeChallengerCharacter(Character beChallengerCharacter)设置被调战者，
 
 传入对象必须是继承于生物基类AbstractCharacter。
 ```
+
 
 2.处理玩家与玩家/镜像的战斗
 
