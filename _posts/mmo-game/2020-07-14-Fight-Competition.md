@@ -432,3 +432,102 @@ public boolean init()
 }
 ```
 初始化，没做什么复杂操作，只是清一下数据。子类，覆写类似。
+
+### 3.onAddBpObject添加对象进场景
+
+#### 1.AbstractBPCopySceneFight比武场景抽象基类添加对象
+
+AbstractBPScene:
+```java
+// 将对象加入场景
+private void doAddBPObjectToScene(BPObject bpObject)
+{
+    ...
+    // 加入场景事件
+    onAddBpObject(bpObject);
+    ...
+}
+```
+
+```java
+@Override
+protected void onAddBpObject(BPObject bpObject)
+{
+     if (bpObject.getObjectType() == ObjectTypeEnum.ACTOR)
+     {
+        if (isEnd())
+        {
+            exitCopyScene(actor);
+            BPLog.BP_SCENE.error("【竞技场错误】副本已经进入结束状态了，不能进入玩家了 [sceneID] {} [line] {} [actorID] {} [objectID] {}", getSceneID(), getLineID(), actor.getActorID(), bpObject.getObjectID());
+            return;
+        }
+
+        if (isStarted())
+        {
+            exitCopyScene(actor);
+            BPLog.BP_SCENE.error("【竞技场错误】竞技场已经开始战斗了，不能进入玩家了 [sceneID] {} [line] {} [actorID] {} [objectID] {}", getSceneID(), getLineID(), actor.getActorID(), bpObject.getObjectID());
+            return;
+        }
+
+        if (this.arenarObjectIdSet.size() >= MAX_ARENAR_COUNT)
+        {
+            exitCopyScene(actor);
+            BPLog.BP_SCENE.error("【竞技场错误】竞技场已经进入两个玩家以上了，不能再进入玩家了 [sceneID] {} [line] {} [actorID] {} [objectID] {}", getSceneID(), getLineID(), actor.getActorID(), bpObject.getObjectID());
+            return;
+        }
+
+        // 设置挑战者和被挑战者
+        onActorEnter(actor);
+
+        // 初始化侠客评价信息
+        initKnightAppraise(actor);
+     }
+}
+```
+判断能不能进人，
+
+设置挑战者和被挑战者，基类会给玩家派发一个buff（类似无敌，防止人没进来被打死），其余逻辑子类各自实现。
+
+初始化侠客评价信息。
+
+#### 2.比武小游戏设置挑战者和被挑战者
+
+这个名字没有起特别好，
+
+```java
+BPCopySceneFightArenaGame：
+@Override
+public void onActorEnter(Actor actor)
+{
+    ...
+    ...
+     // 设置挑战者
+    setChallengerActor(actor);
+    //设置竞技场战斗场景挑战者阵营
+    actor.getHumanCommonModule().changeForce(DictGameConfig.getArenaScenechallengerForceID());
+
+    //打镜像,一些逻辑会根据是否是镜像做处理
+    setMirrorFight(true);
+    ...
+    ...
+    //初始化镜像数据
+    Mirror mirror = new Mirror(mirrorData);
+    mirror.init();
+
+    //镜像出生位置和朝向也是配置在MiniGameFightDifficulty表
+    int[] knightBornPosStrArr = config.getKnightBornPosStrArr();
+    mirror.setPos(knightBornPosStrArr[0], knightBornPosStrArr[1], knightBornPosStrArr[2]);
+    mirror.setRotation(config.getKnightRotation());
+
+    //添加镜像到场景
+    addBPObject(mirror);
+
+    // 设置镜像为被挑战者
+    setBeChallengerHuman(mirror);
+    //改变阵营
+    mirror.getHumanCommonModule().changeForce(DictGameConfig.getArenaScenecBeInviterForceID());
+}
+```
+设置玩家为挑战者更改阵营，
+
+从小游戏模块拿到要挑战的机器人镜像数据，初始化镜像数据，添加机器人到场景...
