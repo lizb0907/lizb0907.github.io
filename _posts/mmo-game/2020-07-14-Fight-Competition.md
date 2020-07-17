@@ -329,7 +329,7 @@ public int callbackStartMiniGameFight(Actor actor, MirrorData mirrorData)
 
 ### 1.比武场景类的继承关系
 
-![](/images/posts/mmo_game/fight_area/01.jpg)
+![](/images/posts/mmo_game/fight-area-01.jpg)
 
 1.最上层的抽象的比武场景
 ```java
