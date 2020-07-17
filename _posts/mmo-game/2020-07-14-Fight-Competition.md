@@ -323,4 +323,112 @@ public int callbackStartMiniGameFight(Actor actor, MirrorData mirrorData)
 因此，在MiniGameFightDifficulty有额外的属性添加值。
 ```
 
-发送响应客户端,进副本
+发送响应客户端,进副本。
+
+## 比武流程
+
+### 1.比武场景类的继承关系
+
+![](/images/posts/mmo_game/fight_area/01.jpg)
+
+1.最上层的抽象的比武场景
+```java
+/**
+ * 抽象的比武场景，处理玩家与玩家/镜像/NPC的战斗流程
+ * <pre>
+ *     场景名称：抽象的比武场景
+ *
+ *     场景说明：0.初始化: 不做什么实质性工作，只是状态机的第一环，代表状态
+ *               1.等待：  等待双方入场，倒计时，记录玩家入场前的血量
+ *               2.开始:   补满血量，去除对应的BUFF
+ *               3.准备:   倒计时
+ *               4.战斗:   双方进入战斗区域战斗，侠客死亡后若备用侠客活着则派出，否则判断胜负
+ *               5.结算：  双方胜负结算
+ *               6.结束：  结束副本，踢出玩家
+ *               7.摧毁：  不做什么实质性的工作，只是状态机最后一环，主要用于标识状态
+ * </pre>
+ */
+public abstract class AbstractBPCopySceneFight<Character extends AbstractCharacter> extends BPCopyScene
+```
+主要是所有子类公用的，记录流程（等待进入，倒计时，开始），一些统计。
+
+<Character extends AbstractCharacter>
+
+```sh
+public void setBeChallengerCharacter(Character beChallengerCharacter)
+{
+    this.beChallengerCharacter = beChallengerCharacter;
+}
+
+setBeChallengerCharacter(Character beChallengerCharacter)设置被调战者，
+
+传入对象必须是继承于生物基类AbstractCharacter。
+```
+
+2.处理玩家与玩家/镜像的战斗
+
+```java
+/**
+ * 抽象的竞技场场景，处理玩家与玩家/镜像的战斗流程
+ */
+public abstract class AbstractBPCopySceneFightArena extends AbstractBPCopySceneFight<AbstractHuman>
+```
+处理玩家与玩家/镜像的战斗流程的抽象类，再抽出了一层，玩家与镜像都是AbstractHuman的子类。
+
+3.NPC比武场景
+```java
+/**
+ * NPC比武副本
+ */
+public class BPCopySceneFightNpc extends AbstractBPCopySceneFight<Npc>
+```
+只是与npc比武，所以extends AbstractBPCopySceneFight<Npc>，传入npc。
+
+4.BPCopySceneFightArena竞技场副本
+```java
+/**
+ * 比武竞技场副本
+ *
+ * <pre>
+ *     场景名称：竞技场
+ *
+ *     场景描述：竞技场场景是参加竞技场挑战的挑战者和被挑战者共同参与的一个非组队一对一的PVP战斗场景。场景中没有NPC。
+ *               挑战者可以携带宠物和傀儡进入。被挑战者如果是玩家可以携带宠物和傀儡进入；被挑战者是玩家镜像，那么镜像只可以在
+ *               该场景内召唤傀儡，并且镜像没有宠物。双方战斗时侠客死亡后若还有备用侠客则暂停战斗，派出备用侠客继续战斗，
+ *               直至一方侠客全部死亡/退出，则另一方胜利。战斗至场景计时结束，则比较双方伤害，输出伤害高的一方胜利。
+ *               双方战斗结束并传送回去，则场景结束并回收。
+ * </pre>
+ */
+public class BPCopySceneFightArena extends AbstractBPCopySceneFightArena
+```
+竞技场可以是玩家与玩家，玩家与镜像，继承自AbstractBPCopySceneFightArena
+
+5.比武小游戏副本
+```java
+/**
+ * 比武小游戏副本
+ */
+public class BPCopySceneFightArenaGame extends AbstractBPCopySceneFightArena
+```
+比武小游戏副本，玩家和镜像战斗，继承自AbstractBPCopySceneFightArena
+
+### 2.初始化操作
+
+AbstractBPCopySceneFight：
+
+```java
+@Override
+public boolean init()
+{
+    boolean flag = super.init();
+    if (!flag)
+    {
+        return false;
+    }
+
+    this.clear();
+
+    return true;
+}
+```
+初始化，没做什么复杂操作，只是清一下数据。子类，覆写类似。
