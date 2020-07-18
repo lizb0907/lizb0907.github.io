@@ -1137,3 +1137,31 @@ public void restoreInfo(Actor actor)
 直接set回之前的属性值
 
 如果进来之前侠客是死亡的，那么继续变成死亡
+
+## mirror镜像的AI逻辑
+
+### 1.状态机的类继承关系
+
+![](/images/posts/mmo_game/mirror1.jpg)
+
+### 2.AI初始化
+
+```java
+BPCopySceneFightArenaGame：
+@Override
+public void onActorEnter(Actor actor)
+{
+    ...
+    ...
+    //初始化镜像数据
+    Mirror mirror = new Mirror(mirrorData);
+    mirror.init();
+
+    //添加镜像到场景
+    addBPObject(mirror);
+    ...
+    ...
+
+}
+```
+比武小游戏场景，玩家添加进场景是，顺带将镜像初始化mirror.init()，并添加到场景。
