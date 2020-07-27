@@ -24,15 +24,17 @@ GC安全点浅谈, stop-the-world时java线程是如何暂停的？然后又是�
 ## 什么是safepoint？
 
 ```sh
-safepoint安全点顾名思义是指一些特定的位置，当线程运行到这些位置时，线程的一些状态可以被确定(the thread's representation of it's Java machine state is well described)。
+1.safepoint安全点顾名思义是指一些特定的位置，当线程运行到这些位置时，
+线程的一些状态可以被确定(the thread's representation of it's Java machine state is well described)。
 
-当线程执行到这些位置的时候，说明虚拟机当前的状态是安全的，如果有需要，可以在这个位置暂停，比如发生GC时，需要暂停所有java活动线程。
+2.当线程执行到这些位置的时候，说明虚拟机当前的状态是安全的，
+如果有需要，可以在这个位置暂停，比如发生GC时，需要暂停所有java活动线程。
 
-运行JNI代码的线程可以继续运行，因为它们只使用句柄。但在安全点期间，它们必须阻塞而不是加载句柄的内容。
+3.运行JNI代码的线程可以继续运行，因为它们只使用句柄。但在安全点期间，它们必须阻塞而不是加载句柄的内容。
 
-在safepoint会生成polling操作去检查全局的一个poling page是否可读，从而决定java线程是否需要挂起。
+4.在safepoint会生成polling操作去检查全局的一个poling page是否可读，从而决定java线程是否需要挂起。
 
-safepoint可以用在不同地方，这里我们只研究GC safepoint。
+5.safepoint可以用在不同地方，这里我们只研究GC safepoint。
 ```
 
 ## GC整体过程大体浏览（openjdk-8）
@@ -42,7 +44,7 @@ safepoint可以用在不同地方，这里我们只研究GC safepoint。
 ```sh
 大体流程就是:
 1.VMThread在创建VMThread对象同时会创建一个储存VM操作的队列。
-2..启动方法run()里会调用loop（）方法。
+2.启动方法run()里会调用loop（）方法。
 3.loop（）方法执行如下：
   .不停的从VMOperationQueue队列取出操作。
   .假设取出的是GC操作，那么调用SafepointSynchronize::begin()进入安全点,将线程挂起。
