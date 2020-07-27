@@ -23,6 +23,8 @@ GC安全点浅谈, stop-the-world时java线程是如何暂停的？然后又是�
 
 ## 什么是safepoint？
 
+![](/images/posts/jvm/safepoint/1.jpg)
+
 ```sh
 1.safepoint安全点顾名思义是指一些特定的位置，当线程运行到这些位置时，
 线程的一些状态可以被确定(the thread's representation of it's Java machine state is well described)。
@@ -55,7 +57,7 @@ GC安全点浅谈, stop-the-world时java线程是如何暂停的？然后又是�
 
 Vmthread负责调度执行虚拟机内部的VM线程操作，如GC操作等，在JVM实例创建时进行初始化。
 
-vmThread.cpp
+vmThread.cpp:
 ![](/images/posts/jvm/safepoint/2.png)
 
 这里除了创建VMThread对象，还会伴随着创建一个VMOperationQueue队列（线程操作队列，例如GC操作）。
