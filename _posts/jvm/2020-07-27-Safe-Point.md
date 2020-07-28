@@ -57,10 +57,10 @@ GC安全点浅谈, stop-the-world时java线程是如何暂停的？然后又是�
 
 ### 1.VMThread创建
 
-Vmthread负责调度执行虚拟机内部的VM线程操作，如GC操作等，在JVM实例创建时进行初始化。
-
 vmThread.cpp:
 ![](/images/posts/jvm/safepoint/2.png)
+
+Vmthread负责调度执行虚拟机内部的VM线程操作，如GC操作等，在JVM实例创建时进行初始化。
 
 这里除了创建VMThread对象，还会伴随着创建一个VMOperationQueue队列（线程操作队列，例如GC操作）。
 
@@ -75,17 +75,28 @@ void VMThread::run() {
 
 }
 ```
-VMThread启动方法run()会调用loop()方法
+VMThread启动方法run会调用loop()方法
 
 ### 3.Loop()方法
 
 ![](/images/posts/jvm/safepoint/3.png)
 
-while（true）循环里，会不停地从VMOperationQueue队列取线程操作（例如：GC操作）
+while（true）循环里，会不停地从VMOperationQueue队列取线程操作（例如：GC操作）。
 
-![](/images/posts/jvm/safepoint/4.png)
+remove_next()会对VM_operation优先级进行重新排序，并返回队列头部的VM_operation，如果没有操作的话会一直等待。
 
-Remove_next()方法里会对VM_operation优先级进行重新排序，并返回队列头部的VM_operation。
+![](/images/posts/jvm/safepoint/5.png)
+
+假设从VMOperationQueue队列取出来的是gc操作，那么需要在安全点操作，如上图。
+
+调用SafepointSynchronize::begin()进入safepoint.cpp，最终会使所有的java线程挂起。
+
+调用evaluate_operation(_cur_vm_operation)执行当前vmOperation操作，也就是GC操作。
+
+![](/images/posts/jvm/safepoint/6.png)
+
+GC完毕调用SafepointSynchronize::end()将线程唤醒。
+
 
 ## 一些概念辅助了解
 
