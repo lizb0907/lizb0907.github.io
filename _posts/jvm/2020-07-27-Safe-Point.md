@@ -46,7 +46,8 @@ GC安全点浅谈, stop-the-world时java线程是如何暂停的？然后又是�
 大体流程:
 1.VMThread在创建VMThread对象的同时会创建一个储存VM操作的队列VMOperationQueue。
 2.启动方法run()里会调用loop（）方法。
-3.loop（）方法执行如下：
+3.GC操作会添加到VMOperationQueue队列。
+4.loop（）方法执行如下：
   .不停的从VMOperationQueue队列取出操作。
   .假设取出的是GC操作，那么调用SafepointSynchronize::begin()进入安全点,将线程挂起。
   .线程被挂起后，会执行evaluate_opesration开始gc。
@@ -58,6 +59,7 @@ GC安全点浅谈, stop-the-world时java线程是如何暂停的？然后又是�
 ### 1.VMThread创建
 
 vmThread.cpp:
+
 ![](/images/posts/jvm/safepoint/2.png)
 
 Vmthread负责调度执行虚拟机内部的VM线程操作，如GC操作等，在JVM实例创建时进行初始化。
@@ -75,9 +77,17 @@ void VMThread::run() {
 
 }
 ```
-VMThread启动方法run会调用loop()方法
+VMThread启动方法run（），我们看到它会调用loop()方法。
 
-### 3.void VMThread::loop()
+### 3.添加GC操作到VMOperationQueue队列
+
+collectorPolicy.cpp：
+
+![](/images/posts/jvm/safepoint/7.png)
+
+触发gc操作时，会调用VMThread::execute()方法
+
+### 4.void VMThread::loop()
 
 ![](/images/posts/jvm/safepoint/3.png)
 
