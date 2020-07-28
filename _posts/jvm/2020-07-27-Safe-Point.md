@@ -87,6 +87,10 @@ collectorPolicy.cpp：
 
 触发gc操作时，会调用VMThread::execute()方法
 
+![](/images/posts/jvm/safepoint/8.png)
+
+_vm_queue->add(op)将当前线程操作加入队列（例如：GC操作）
+
 ### 4.void VMThread::loop()
 
 ![](/images/posts/jvm/safepoint/3.png)
