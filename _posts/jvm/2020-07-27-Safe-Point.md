@@ -81,19 +81,20 @@ VMThread启动方法run会调用loop()方法
 
 ![](/images/posts/jvm/safepoint/3.png)
 
+```sh
 while（true）循环里，会不停地从VMOperationQueue队列取线程操作（例如：GC操作）。
-
 remove_next()会对VM_operation优先级进行重新排序，并返回队列头部的VM_operation，如果没有操作的话会一直等待。
-
+```
 
 ![](/images/posts/jvm/safepoint/5.png)
 
+```sh
 假设从VMOperationQueue队列取出来的是gc操作，那么需要在安全点操作：
 
   .调用SafepointSynchronize::begin()进入safepoint.cpp，最终会使所有的java线程挂起。
 
   .调用evaluate_operation(_cur_vm_operation)执行当前vmOperation操作，也就是GC操作。
-
+```
 
 ![](/images/posts/jvm/safepoint/6.png)
 
