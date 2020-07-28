@@ -91,7 +91,7 @@ collectorPolicy.cpp：
 
 _vm_queue->add(op)将当前线程操作加入队列（例如：GC操作）
 
-### 4.void VMThread::loop()
+### 4.VMThread::loop()
 
 ![](/images/posts/jvm/safepoint/3.png)
 
@@ -116,6 +116,11 @@ SafepointSynchronize::end();
 ```
 
 GC完毕调用SafepointSynchronize::end()将线程唤醒。
+
+## SafepointSynchronize::begin()如何将线程挂起？
+
+SafepointSynchronize::begin()里会进行很多准备操作。
+
 
 
 ## 一些概念辅助了解
