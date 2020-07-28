@@ -77,7 +77,7 @@ void VMThread::run() {
 ```
 VMThread启动方法run会调用loop()方法
 
-### 3.Loop()方法
+### 3.void VMThread::loop()
 
 ![](/images/posts/jvm/safepoint/3.png)
 
