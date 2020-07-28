@@ -17,9 +17,9 @@ GC安全点浅谈, stop-the-world时java线程是如何暂停的？然后又是�
 
 我们一直都知道当发生gc时，正在执行的java code线程需要全部停下来，才可以进行垃圾回收，也就是我们知道的stop-the-world。
 
-那么java线程是如何暂停的？然后又是如何恢复？我们今天一起来探讨一下。
+那么java线程是如何暂停的？然后又是如何恢复？
 
-希望通过本章学习，我们能对GC时java线程的暂停和恢复机制有大概了解。
+本文章源码基于OpenJdk8，希望通过本次学习，我们能对GC时java线程的暂停和恢复机制有大概了解。
 
 ## 什么是safepoint？
 ```sh
@@ -38,13 +38,13 @@ GC安全点浅谈, stop-the-world时java线程是如何暂停的？然后又是�
 
 ## GC整体过程大体浏览（openjdk-8）
 
-为了搞明白线程是如何被挂起，有必要了解下GC整体过程。
-
 ![](/images/posts/jvm/safepoint/1.jpg)
 
+为了搞明白线程是如何被挂起? 以及如何恢复？有必要了解下GC整体过程。
+
 ```sh
-大体流程就是:
-1.VMThread在创建VMThread对象同时会创建一个储存VM操作的队列。
+大体流程:
+1.VMThread在创建VMThread对象的同时会创建一个储存VM操作的队列VMOperationQueue。
 2.启动方法run()里会调用loop（）方法。
 3.loop（）方法执行如下：
   .不停的从VMOperationQueue队列取出操作。
@@ -52,6 +52,9 @@ GC安全点浅谈, stop-the-world时java线程是如何暂停的？然后又是�
   .线程被挂起后，会执行evaluate_opesration开始gc。
   .gc完毕调用SafepointSynchronize::end()将线程唤醒。
 ```
+
+## 源码初探
+
 ### 1.VMThread创建
 
 Vmthread负责调度执行虚拟机内部的VM线程操作，如GC操作等，在JVM实例创建时进行初始化。
