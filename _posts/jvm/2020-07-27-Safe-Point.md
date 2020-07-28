@@ -96,7 +96,10 @@ remove_next()会对VM_operation优先级进行重新排序，并返回队列头�
   .调用evaluate_operation(_cur_vm_operation)执行当前vmOperation操作，也就是GC操作。
 ```
 
-![](/images/posts/jvm/safepoint/6.png)
+```java
+// Complete safepoint synchronization
+SafepointSynchronize::end();
+```
 
 GC完毕调用SafepointSynchronize::end()将线程唤醒。
 
