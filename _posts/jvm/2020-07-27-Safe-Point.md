@@ -119,9 +119,46 @@ GC完毕调用SafepointSynchronize::end()将线程唤醒。
 
 ## SafepointSynchronize::begin()如何将线程挂起？
 
-SafepointSynchronize::begin()里会进行很多准备操作。
+该方法还会做很多初始化操作，这里我们只关注重点，将java线程挂起的操作。
 
+![](/images/posts/jvm/safepoint/9.png)
 
+将java线程挂起时，java线程可能处于不同状态，所以挂起的机制也不同，大致就是如上图5种状态。
+
+### 1.Running interpreted 
+
+```sh
+线程处于不同状态下，DispatchTable会设置不同的值：
+._active_table 正在解释运行的线程
+._normal_table 正常运行的
+._safept_table 处于安全点
+```
+
+SafepointSynchronize::begin()->Interpreter::notice_safepoints()：
+```java
+void TemplateInterpreter::notice_safepoints() {
+  if (!_notice_safepoints) {
+    // switch to safepoint dispatch table
+    _notice_safepoints = true;
+    copy_table((address*)&_safept_table, (address*)&_active_table, sizeof(_active_table) / sizeof(address));
+  }
+}
+```
+
+```sh
+线程处于不同状态下，DispatchTable为不同的值：
+._active_table 正在解释运行的线程
+._normal_table 正常运行的
+._safept_table 处于安全点
+
+线程在解释java字节码的时候，DispatchTable会记录方法地址跳转。想让线程进入safepoint，只要替换掉DispatchTable，解释器会把指令跳转到safepoint，然后检查状态，比如检查某个内存页位置，从而让线程阻塞。
+
+用_safept_table替换_active_table,
+```
+
+DispatchTable是什么类？干什么用的？
+
+### 1.
 
 ## 一些概念辅助了解
 
