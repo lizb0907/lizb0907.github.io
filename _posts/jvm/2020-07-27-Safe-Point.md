@@ -32,8 +32,12 @@ GC安全点浅谈, stop-the-world时java线程是如何暂停的？然后又是�
 3.运行JNI代码的线程可以继续运行，因为它们只使用句柄。但在安全点期间，它们必须阻塞而不是加载句柄的内容。
 
 4.在safepoint会生成polling操作去检查全局的一个poling page是否可读，从而决定java线程是否需要挂起。
+```
 
-5.safepoint可以用在不同地方，这里我们只研究GC safepoint。
+```sh
+But many other safepoint based VM operations exist, for example: biased locking revocation, thread stack dumps, thread suspension or stopping (i.e. The java.lang.Thread.stop() method) and numerous inspection/modification operations requested through JVMTI.
+
+官方介绍safepoint可以用在不同地方，这里我们只研究 GC safepoint。
 ```
 
 ## GC整体过程大体浏览（openjdk-8）
@@ -117,9 +121,9 @@ SafepointSynchronize::end();
 
 GC完毕调用SafepointSynchronize::end()将线程唤醒。
 
-## SafepointSynchronize::begin()如何将线程挂起？
+## 如何将线程挂起？
 
-该方法还会做很多初始化操作，这里我们只关注重点，将java线程挂起的操作。
+SafepointSynchronize::begin()方法会将线程挂起，这里我们只关注重点，如何将java线程挂起？
 
 ![](/images/posts/jvm/safepoint/9.png)
 
@@ -127,14 +131,8 @@ GC完毕调用SafepointSynchronize::end()将线程唤醒。
 
 ### 1.Running interpreted 
 
-```sh
-线程处于不同状态下，DispatchTable会设置不同的值：
-._active_table 正在解释运行的线程
-._normal_table 正常运行的
-._safept_table 处于安全点
-```
-
 SafepointSynchronize::begin()->Interpreter::notice_safepoints()：
+
 ```java
 void TemplateInterpreter::notice_safepoints() {
   if (!_notice_safepoints) {
@@ -146,17 +144,15 @@ void TemplateInterpreter::notice_safepoints() {
 ```
 
 ```sh
-线程处于不同状态下，DispatchTable为不同的值：
+需要先解释一个概念，线程处于不同状态下，DispatchTable会设置不同的值：
 ._active_table 正在解释运行的线程
 ._normal_table 正常运行的
 ._safept_table 处于安全点
 
-线程在解释java字节码的时候，DispatchTable会记录方法地址跳转。想让线程进入safepoint，只要替换掉DispatchTable，解释器会把指令跳转到safepoint，然后检查状态，比如检查某个内存页位置，从而让线程阻塞。
-
-用_safept_table替换_active_table,
+DispatchTable可以理解为调度表的意思，会记录方法地址跳转。
+当线程在解释java字节码的时候，想让线程进入safepoint，只需通知解释器将DispatchTable替换为_safept_table，解释器就会把指令跳转到safepoint，
+然后检查状态，比如检查某个内存页位置，从而让线程阻塞。这里检查内存页操作，后面会讲。
 ```
-
-DispatchTable是什么类？干什么用的？
 
 ### 1.
 
