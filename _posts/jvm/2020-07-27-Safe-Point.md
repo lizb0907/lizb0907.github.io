@@ -32,6 +32,8 @@ GC安全点浅谈, stop-the-world时java线程是如何暂停的？然后又是�
 3.当线程执行到这些位置的时候，说明虚拟机当前的状态是安全的，如果有需要，可以在这个位置暂停。
 
 4.在safepoint会生成polling操作去检查全局的一个poling page是否可读，从而决定java线程是否需要挂起。
+Poling page是在jvm初始化启动的时候会初始化的一个单独的内存页面，这个页面是让运行的编译过的代码的线程进入停止状态的关键，
+它是一个全局的safepoint polling page。
 ```
 
 ```sh
