@@ -15,21 +15,21 @@ GC安全点浅谈, stop-the-world时java线程是如何暂停的？然后又是�
 
 ## GC时java线程是如何暂停的？然后又是如何恢复？
 
-我们一直都知道当发生gc时，正在执行的java code线程需要全部停下来，才可以进行垃圾回收，也就是我们知道的stop-the-world。
+我们一直都知道当发生gc时，正在执行的java code线程需要全部停下来(运行本机代码的线程可以继续运行，只要它们不与JVM交互)，才可以进行垃圾回收，也就是我们知道的stop-the-world。
 
-那么java线程是如何暂停的？然后又是如何恢复？
+那么线程是如何暂停的？然后又是如何恢复？
 
 本文章源码基于OpenJdk8，希望通过本次学习，我们能对GC时java线程的暂停和恢复机制有大概了解。
 
 ## 什么是safepoint？
+
 ```sh
 1.safepoint安全点顾名思义是指一些特定的位置，当线程运行到这些位置时，
 线程的一些状态可以被确定(the thread's representation of it's Java machine state is well described)。
 
-2.当线程执行到这些位置的时候，说明虚拟机当前的状态是安全的，
-如果有需要，可以在这个位置暂停，比如发生GC时，需要暂停所有java活动线程。
+2.程序执行期间所有GC根已知且所有堆对象内容一致的点。
 
-3.运行JNI代码的线程可以继续运行，因为它们只使用句柄。但在安全点期间，它们必须阻塞而不是加载句柄的内容。
+3.当线程执行到这些位置的时候，说明虚拟机当前的状态是安全的，如果有需要，可以在这个位置暂停。
 
 4.在safepoint会生成polling操作去检查全局的一个poling page是否可读，从而决定java线程是否需要挂起。
 ```
@@ -37,7 +37,9 @@ GC安全点浅谈, stop-the-world时java线程是如何暂停的？然后又是�
 ```sh
 But many other safepoint based VM operations exist, for example: biased locking revocation, thread stack dumps, thread suspension or stopping (i.e. The java.lang.Thread.stop() method) and numerous inspection/modification operations requested through JVMTI.
 
-官方介绍safepoint可以用在不同地方，这里我们只研究 GC safepoint。
+官方介绍safepoint除了用于GC外还可以用在不同地方，例如：取消偏向锁、线程堆栈转储、线程的暂停或终止...
+
+这里我们只研究 GC safepoint。
 ```
 
 ## GC整体过程大体浏览（openjdk-8）
