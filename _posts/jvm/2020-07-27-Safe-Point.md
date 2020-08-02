@@ -21,6 +21,31 @@ GC安全点浅谈, stop-the-world时java线程是如何暂停的？然后又是�
 
 本文章源码基于OpenJdk8，希望通过本次学习，我们能对GC时java线程的暂停和恢复机制有大概了解。
 
+## 几个很重要的概念
+
+### 1.Poling page
+
+```sh
+Poling page是在jvm初始化启动的时候会初始化的一个单独的内存页面，这个页面是让运行的编译过的代码的线程进入停止状态的关键，
+它是一个全局的safepoint polling page。
+```
+
+```sh
+抢先式中断不需要线程的执行代码主动去配合，在GC发生时，首先把所有线程全部中断，如果发现有线程中断的地方不在安全点上，就恢复线程，让它跑到安全点上。
+
+现在几乎没有虚拟机实现采用抢先式中断来暂停线程响应GC事件。 
+```
+
+```sh
+主动式中断的思想是当GC需要中断线程的时候，不直接对线程操作，仅仅简单地设置一个标志，
+
+各个线程执行时主动去轮询这个标志，发现中断标志为真时就自己中断挂起。轮询标志的地方和安全点是重合的。
+```
+
+```sh
+mprotect设置内存映像保护
+```
+
 ## 什么是safepoint？
 
 ```sh
@@ -32,8 +57,6 @@ GC安全点浅谈, stop-the-world时java线程是如何暂停的？然后又是�
 3.当线程执行到这些位置的时候，说明虚拟机当前的状态是安全的，如果有需要，可以在这个位置暂停。
 
 4.在safepoint会生成polling操作去检查全局的一个poling page是否可读，从而决定java线程是否需要挂起。
-Poling page是在jvm初始化启动的时候会初始化的一个单独的内存页面，这个页面是让运行的编译过的代码的线程进入停止状态的关键，
-它是一个全局的safepoint polling page。
 ```
 
 ```sh
@@ -42,6 +65,16 @@ But many other safepoint based VM operations exist, for example: biased locking 
 官方介绍safepoint除了用于GC外还可以用在不同地方，例如：取消偏向锁、线程堆栈转储、线程的暂停或终止...
 
 这里我们只研究 GC safepoint。
+```
+
+## safepoint设置的主要位置
+
+```sh
+1. 循环的末尾 (防止大循环的时候一直不进入safepoint，而其他线程在等待它进safepoint）
+2. 方法返回前
+3. 调用方法的call之后
+4. 抛出异常的位置
+Safepoint的选定既不能太少以致于让GC等待时间太长，也不能过于频繁以致于过分增大运行时的负荷。所以，安全点的选定基本上是以程序“是否具有让程序长时间执行的特征”为标准进行选定的——因为每条指令执行的时间都非常短暂，程序不太可能因为指令流长度太长这个原因而过长时间运行，“长时间执行”的最明显特征就是指令序列复用，例如方法调用、循环跳转、异常跳转等，所以具有这些功能的指令才会产生Safepoint。
 ```
 
 ## GC整体过程大体浏览（openjdk-8）
@@ -125,11 +158,11 @@ SafepointSynchronize::end();
 
 GC完毕调用SafepointSynchronize::end()将线程唤醒。
 
-## 如何将线程挂起？
-
-SafepointSynchronize::begin()方法会将线程挂起，这里我们只关注重点，如何将java线程挂起？
+## 不同状态下，挂起操作
 
 ![](/images/posts/jvm/safepoint/9.png)
+
+SafepointSynchronize::begin()方法会做各种操作，最终将线程挂起，这里我们只关注重点，如何将java线程挂起？
 
 将java线程挂起时，java线程可能处于不同状态，所以挂起的机制也不同，大致就是如上图5种状态。
 
@@ -158,84 +191,107 @@ DispatchTable可以理解为调度表的意思，会记录方法地址跳转。
 然后检查状态，比如检查某个内存页位置，从而让线程阻塞。这里检查内存页操作，后面会讲。
 ```
 
-### 1.
+### 2.Runing in native code
 
-## 一些概念辅助了解
+我们前面也提到过，运行本机代码的线程可以继续运行。
 
-### 1.Poling page
+如果VM thread发现一个Java thread正在执行native code，并不会等待该Java thread阻塞，当Java thread从native code返回时，必须检查safepoint状态，看是否需要进行阻塞。
 
-```sh
-Poling page是在jvm初始化启动的时候会初始化的一个单独的内存页面，这个页面是让运行的编译过的代码的线程进入停止状态的关键，
-它是一个全局的safepoint polling page。 
+
+### 3.Runing compiled code
+
+```java
+if (UseCompilerSafepoints && DeferPollingPageLoopCount < 0) {
+    // Make polling safepoint aware
+    guarantee (PageArmed == 0, "invariant") ;
+    PageArmed = 1 ;
+    os::make_polling_page_unreadable();
+  }
 ```
 
-### 2.jvm 解释器
-
 ```sh
-JVM内部的一个数据结构，用来保存字节码和机器码。
+java线程执行编译代码时,会调用make_polling_page_unreadable函数，make_polling_page_unreadable在不同的操作系统中实现不同，我们只看linux下的实现:
+
+make_polling_page_unreadable()->guard_memory((char*)_polling_page, Linux::page_size())->linux_mprotect(addr, size, PROT_NONE)->
+mprotect(bottom, size, prot)。
+
+mprotect(bottom, size, prot)：
+1.在Linux中，mprotect()函数可以用来修改一段指定内存区域（例如全局内存页）的保护属性。
+2.mprotect()函数把自start开始的、长度为len的内存区的保护属性修改为prot指定的值。
+3.prot可以取以下几个值：
+  .PROT_READ：表示内存段内的内容可写。
+  .PROT_WRITE：表示内存段内的内容可读。
+  .PROT_EXEC：表示内存段中的内容可执行。
+  .PROT_NONE：表示内存段中的内容根本没法访问。
+
+我们看到最终是调用mprotect函数，并且prot传入的值是PROT_NONE（不可访问）。
+
+hotspot采用的是主动式中断，当GC需要中断线程的时候，不直接对线程操作，仅仅简单地设置一个标志，各个线程执行时主动去轮询这个标志。
+
+mprotect函数将全局的内存页设置为不可读，当线程访问到该内存地址，发现不可读，则该线程会被挂起等待。
 ```
 
-### 3.JIT编译器
+这个检查内存页是否可读是一个轮询指令，它的插入是在JIT编译中，编译器会把很多的是否进入安全点的检查操作插入到机器码指令中。
+
+比如下面的指令HotSpot生成的轮询指令：
+
+![](/images/posts/jvm/safepoint/11.png)
 
 ```sh
-Java程序最初是仅仅通过解释器解释执行的，即对字节码逐条解释执行，这种方式的执行速度相对会比较慢，
-尤其当某个方法或代码块运行的特别频繁时，这种方式的执行效率就显得很低。
+这个内存页地址就是0x160100，当需要暂停线程时，虚拟机把0x160100地址的内存页设置为不可读，也就是我们上面讲的调用mprotect函数，
 
-于是后来在虚拟机中引入了JIT编译器（即时编译器），当虚拟机发现某个方法或代码块运行特别频繁时，就会把这些代码认定为“Hot Spot Code”（热点代码），
-为了提高热点代码的执行效率，在运行时，虚拟机将会把这些代码编译成与本地平台相关的机器码，并进行各层次的优化，完成这项任务的正是JIT编译器。
-
-java的JIT会直接编译一些热门的源码到机器码直接执行而不需要在解释执行从而提高效率，在编译的代码中，当函数或者方法块返回的时候会去访问一个内存poling页面。
-
-通过JIT编译的代码里，会在所有方法的返回之前，以及所有非counted loop的循环（无界循环）回跳之前放置一个safepoint，为了防止发生GC需要STW时，该线程一直不能暂停。
-
-另外，JIT编译器在生成机器码的同时会为每个safepoint生成一些“调试符号信息”，为GC生成的符号信息是OopMap，指出栈上和寄存器里哪里有GC管理的指针。
-
-守护线程是一种特殊的线程，就和它的名字一样，它是系统的守护者，在后台默默地完成一些系统性的服务，比如垃圾回收线程、JIT线程就可以理解为守护线程。
+线程执行到test指令时就会产生一个自陷异常信号，在预先注册的异常处理器中暂停线程实现等待。
 ```
 
-### 4.抢先式中断
+可以简单参考下图：
 
-```sh
-抢先式中断不需要线程的执行代码主动去配合，在GC发生时，首先把所有线程全部中断，如果发现有线程中断的地方不在安全点上，就恢复线程，让它跑到安全点上。
+![](/images/posts/jvm/safepoint/12.png)
 
-现在几乎没有虚拟机实现采用抢先式中断来暂停线程响应GC事件。 
-```
+### 4.Blocked
 
-### 5.主动式中断
+safepoint只能处理正在运行的线程，它们可以主动运行到safepoint。而一些Sleep或者被blocked的线程不能主动运行到safepoint。这些线程也需要在GC的时候被标记检查，JVM引入了safe region的概念。safe region是指一块区域，这块区域中的引用都不会被修改，比如线程被阻塞了，那么它的线程堆栈中的引用是不会被修改的，JVM可以安全地进行标记。线程进入到safe region的时候先标识自己进入了safe region，等它被唤醒准备离开safe region的时候，先检查能否离开，如果GC已经完成，那么可以离开，否则就在safe region呆着。
 
-```sh
-主动式中断的思想是当GC需要中断线程的时候，不直接对线程操作，仅仅简单地设置一个标志，
+### 5.VM or Transitioning between states
 
-各个线程执行时主动去轮询这个标志，发现中断标志为真时就自己中断挂起。轮询标志的地方和安全点是重合的。
-```
+当线程处在状态转化的时候，线程会去安全点然后检查状态，如果要阻塞，就自己阻塞了。
 
-### 6._active_table
+## 挂起机制的触发
 
-```sh
-解释运行的线程一直都在使用_active_table,关键处就是在进入saftpoint 的时候，用_safept_table替换_active_table,
-在退出saftpoint 的时候，使用_normal_table来替换_active_table。
-```
+![](/images/posts/jvm/safepoint/13.png)
 
-### 7.JVM有两种执行方式
+如果调用进程试图以违反保护的方式访问内存，也就是访问到不可读的内存页，那么内核会为该进程生成一个SIGSEGV信号。
 
-```sh
-解释型和编译型(JIT)，JVM要保证这两种执行方式下safepoint都能工作。
-```
+调用如上图，最终会调用SafepointSynchronize::block(thread())阻塞。
 
-### 8.mprotect
+## 执行GC操作
 
-设置内存映像保护
+当线程在安全点阻塞后，调用evaluate_operation(_cur_vm_operation)执行当前vmOperation操作。
 
-### 9.safepoint的使用场景
+![](/images/posts/jvm/safepoint/14.png)
 
-```sh
-.垃圾回收(这是最常见的场景)
-.取消偏向锁(JVM会使用偏向锁来优化锁的获取过程)
-.Class重定义(比如常见的hotswap和instrumentation)
-.Code Cache Flushing(JDK1.8在CodeCache满的情况下就可能出现)
-.线程堆栈转储(jstack命令)
-```
+doit()方法会执行各种vm操作，如果当前是gc操作会调用vmGCOperations下的VM_GenCollectForAllocation::doit()方法实现相关操作。
 
-### 10.UseCompilerSafepoints 和 DeferPollingPageLoopCount 默认值
+## 线程如何恢复的？
 
-10.在默认的情况下这2个参数分别是true和-1
+![](/images/posts/jvm/safepoint/15.png)
+
+make_polling_page_readable设置全局内存页为可读，操作一样只是此时传入的是PROT_READ可读。
+
+重新将将DispatchTable从_safept_table更新为_nomal_table。
+
+启动暂停的线程。
+
+## 总结
+
+安全点机制其实实现起来非常复杂，由于精力和水平有限，难免会出现错误，欢迎大家指正，并且还有很多细节没有继续往下抠。
+
+不过到此为止，我们也能对GC时java线程的暂停和恢复机制有了大概了解。
+
+还有一些比较有意义的问题有兴趣的可以继续往下研究:
+
+例如：大多数人知道VMThread在进行GC时会等到所有的Java线程进入安全点阻塞后才可以进行（这里的“所有”指必须进入的java线程），否则VMThread会阻塞进行等待。
+
+那VMThread在调用void SafepointSynchronize::begin()方法后是不是立马阻塞的？(ps:个人研究后，发现其实不是立马就阻塞的)
+
+当所有java线程进入安全点阻塞后，VMThread又是如何被唤醒开始执行GC?
+
