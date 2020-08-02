@@ -77,7 +77,7 @@ But many other safepoint based VM operations exist, for example: biased locking 
 Safepoint的选定既不能太少以致于让GC等待时间太长，也不能过于频繁以致于过分增大运行时的负荷。所以，安全点的选定基本上是以程序“是否具有让程序长时间执行的特征”为标准进行选定的——因为每条指令执行的时间都非常短暂，程序不太可能因为指令流长度太长这个原因而过长时间运行，“长时间执行”的最明显特征就是指令序列复用，例如方法调用、循环跳转、异常跳转等，所以具有这些功能的指令才会产生Safepoint。
 ```
 
-## GC整体过程大体浏览（openjdk-8）
+## GC整体过程大体浏览
 
 ![](/images/posts/jvm/safepoint/1.jpg)
 
