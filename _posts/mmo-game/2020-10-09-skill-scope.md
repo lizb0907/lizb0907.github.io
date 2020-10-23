@@ -81,11 +81,109 @@ sin30 中的30表示30弧度(1弧度=57.3°)
 ![](/images/posts/mmo_game/skill_scope/6.png)
 
 ```sh
-前向矩形范围，人在矩形的宽边中央位置, 也就是上图的A点。
+1.前向矩形范围，人在矩形的宽边中央位置, 也就是上图的A点。
 
-我们的技能AOE扫敌，不只是只能扫正前方的怪物，还可以有一定的向后延伸距离，也就是B点所在的虚线框。所以初始点，就变成了B点。
+2.我们的技能AOE扫敌，不只是只能扫正前方的怪物，还可以有一定的向后延伸距离，
+也就是B点所在的虚线框。所以初始点，就变成了B点。
 
-C为被攻击者。
+3.C为被攻击者。
 
-如果以
+4.以初始点B为参照，最远的长度其实就是BE,也就是从宽的中央B点到矩形对角点E。
+
+5.计算出BD的长度h, CD的长度w, 判断h是否小于等于最大长度BE，w是否小于等于
+宽的一半即BG长度，即可以判断受击点C是否在矩形内。
 ```
+
+核心代码如下:
+```java
+/**
+* 初始化
+* @param unit 施法者自身
+* @param width 宽
+* @param height 高
+* @param list 待加入对象的列表
+*/
+public RectVisionConsumer(BPObject unit, int width, int height, List<BPObject> list)
+{
+    this.list = list;
+
+    //自身坐标和朝向
+    this.x = unit.getX();
+    this.z = unit.getZ();
+    this.rotation = unit.getRotation();
+
+    MapUtils.polar(DictGameConfig.getVisionBackLength(), this.rotation, re);
+
+    //向后的x和z坐标
+    rx = this.x - re[0];
+    rz = this.z - re[1];
+
+    //宽度一半
+    this.halfWidth = width / 2;
+
+    this.height = height + DictGameConfig.getVisionBackLength();
+
+    dsq = (long) width * (long) width / 4 + (long) this.height * (long) this.height;
+
+    if (unit instanceof AbstractCharacter)
+    {
+        AbstractCharacter character = (AbstractCharacter) unit;
+        if (character.getSkillModule().isUsingSkill() && character.getFightModule().isFightStatus())
+        {
+            isFightScan = true;
+        }
+    }
+}
+
+@Override
+public void accept(BPObject unit)
+{
+    int ux = unit.getX();
+    int uy = unit.getZ();
+
+    float distanceSQ = MapUtils.distanceSqBetweenPos(rx, rz, ux, uy);
+    float beHitDistanceSQ = distanceSQ;
+    float distance = -1;
+
+    //被攻击者距离（rx, rz）
+    float beHitDistance = -1;
+
+    if (isFightScan)
+    {
+        if (unit.isCloseBeHit())
+        {
+            return;
+        }
+        distance = (float) Math.sqrt(distanceSQ);
+        beHitDistance = unit.getBeHitDistance(distance);
+        beHitDistanceSQ = beHitDistance * beHitDistance;
+    }
+
+    if (beHitDistanceSQ <= dsq)
+    {
+        if(beHitDistance < 0)
+        {
+            beHitDistance = (float) Math.sqrt(beHitDistanceSQ);
+        }
+
+        int rotationA = this.rotation - MapUtils.rotationBetweenPos(rx, rz, ux, uy);
+
+        //角度转为弧度
+        double radiansA = Math.toRadians(rotationA);
+
+        double h = Math.cos(radiansA) * beHitDistance;
+        double w = Math.sin(radiansA) * beHitDistance;
+
+        if (Math.abs(w) <= halfWidth)
+        {
+            if (h >= 0 && h <= height)
+            {
+                list.add(unit);
+            }
+        }
+    }
+}
+
+```
+
+### 2.扇形
