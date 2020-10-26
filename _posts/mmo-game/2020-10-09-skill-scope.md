@@ -78,9 +78,9 @@ sin30 中的30表示30弧度(1弧度=57.3°)
 
 https://lifan.tech/2020/01/21/game/aoe-skill-selector/
 
-核心思想差不多，方法不唯一，我们项目在矩形上采用的是另外一种方法。
+核心思想差不多，方法不唯一，我们项目稍微有一点不同。
 
-## 6.我们项目技能索敌
+## 6.我们项目技能索敌（向后有延伸一段距离）
 
 ### 1.矩形
 
@@ -195,3 +195,85 @@ public void accept(BPObject unit)
 ```
 
 ### 2.扇形
+
+![](/images/posts/mmo_game/skill_scope/8.png)
+
+```sh
+1.A是玩家坐标点，α阿尔法角度是玩家朝向rotation。
+
+2.B是扇形向后延伸一段距离后经过运算得到的点。我们的技能AOE扫敌，不只是只能扫正前方的怪物，
+还可以有一定的向后延伸距离，所以初始点，就变成了B点。扇形的面积也就变成了红色范围面积。
+
+3.C点是被攻击者的坐标点。
+
+4.B点对于C的朝向为β角，BC的距离就是被攻击者到被攻击者的距离。
+
+5.扇形的角度一半为 (θ/2)。
+
+6. α - β 角度的绝对值就是 γ 角。
+
+7.所以判断C点是否在扇形内，只需判断BC的长度是否小于等于BD，同时判断 γ 角是否大于0并且小于等于θ/2。
+
+```
+
+核心代码如下:
+```java
+public SectorVisionConsumer(BPObject unit,int radius,int angle,List<BPObject> list)
+{
+    this.list = list;
+    this.x = unit.getX();
+    this.z = unit.getZ();
+    this.dsq = (long)radius * (long)radius;
+    this.rotation = unit.getRotation();
+    this.angle = angle / 2;
+    
+    MapUtils.polar(DictGameConfig.getVisionBackLength(),this.rotation, re);
+
+    rx = this.x - re[0];
+    rz = this.z - re[1];
+
+    radius = radius + DictGameConfig.getVisionBackLength();
+
+    dsq = (long)radius * (long)radius;
+    this.isFightScan = true;
+}
+
+@Override
+public void accept(BPObject unit)
+{
+    int ux = unit.getX();
+    int uz = unit.getZ();
+
+    float distanceSQ = MapUtils.distanceSqBetweenPos(rx, rz, ux, uz);
+
+    if (isFightScan)
+    {
+        if (unit.isCloseBeHit())
+        {
+            return;
+        }
+        float distance = (float)Math.sqrt(distanceSQ);
+        distance = unit.getBeHitDistance(distance);
+        distanceSQ = distance * distance;
+    }
+
+    if (distanceSQ <= dsq)
+    {
+        int rotationA = MapUtils.rotationCut180(this.rotation - MapUtils.rotationBetweenPos(rx, rz, ux, uz));
+
+        if (Math.abs(rotationA) < angle)
+        {
+            list.add(unit);
+        }
+    }
+}
+```
+
+### 3.圆形
+
+圆形就比较简单了，就判断攻击者到被攻击者的距离是否在半径内就完事了。
+
+
+### 4.环形
+
+环形也比较简单，判断攻击者到被攻击者的距离是大于等于内半径，小于等于外半径就完事。
