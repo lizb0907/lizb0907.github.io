@@ -13,7 +13,7 @@ TIntArrayList的resetQuick()方法使用注意事项！
 * TOC
 {:toc}
 
-## TIntArrayList的 clear() 方法对比和 resetQuick() 方法对比
+## TIntArrayList的 clear() 和 resetQuick() 对比
 
 ```java
 public void clear() {
