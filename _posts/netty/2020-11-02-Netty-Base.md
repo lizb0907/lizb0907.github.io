@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Netty基础概览览
+title: Netty基础概览
 categories: Netty
 description: netty基础概念掌握
 keywords: netty,base
