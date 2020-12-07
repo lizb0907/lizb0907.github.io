@@ -27,6 +27,14 @@ netty基础概念掌握
 
 ### 5.ChannelPipeline
 
+## 遗留问题
+
+1.ByteBuf的池化技术ByteBufAllocator
+
+2.当某个 ChannelInboundHandler 的实现重写 channelRead()方法时，
+
+必须要显式地释放与池化的 ByteBuf 实例相关的内存吗？不释放会导致内存泄露吗？
+
 
 ### 6.ChannelHandlerContext
 
