@@ -8,7 +8,7 @@ menu: 关于
 permalink: /about/
 ---
 
-时间上最难的就是坚持做好一件事！
+世界上最难的就是坚持做好一件事！
 
 未来路很长，一起成长！
 
@@ -17,7 +17,9 @@ permalink: /about/
 {% for website in site.data.social %}
 * {{ website.sitename }}：[@{{ website.name }}]({{ website.url }})
 {% endfor %}
-### 博主微信：lizb0907 (有疑惑可以加好友交流)
+### 博主微信：lizb0907, 加好友入交流群 (备注:github博客)
+
+![](/images/about/weixin.jpg)
 
 ## Skill Keywords
 
