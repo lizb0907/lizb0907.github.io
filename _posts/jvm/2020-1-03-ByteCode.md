@@ -74,6 +74,27 @@ keywords: JVM,ByteCode
   合”。
 ```
 
+```sh
+ClassFile {
+    u4             magic;
+    u2             minor_version;
+    u2             major_version;
+    u2             constant_pool_count;
+    cp_info        constant_pool[constant_pool_count-1];
+    u2             access_flags;
+    u2             this_class;
+    u2             super_class;
+    u2             interfaces_count;
+    u2             interfaces[interfaces_count];
+    u2             fields_count;
+    field_info     fields[fields_count];
+    u2             methods_count;
+    method_info    methods[methods_count];
+    u2             attributes_count;
+    attribute_info attributes[attributes_count];
+}
+```
+
 ![](/images/posts/jvm/bytecode/2.png)
 
 ### 1.魔数与文件版本号
@@ -167,4 +188,15 @@ Class文件中不会保存各个方法、字段最终在内存中的布局信息
 英文字符的变量或方法名，即使规则和全部字符都是合法的，也会无法编译。
 ```
 
-### 2.使用javap命令输出常量表
+### 2.使用javap -verbose TestClass命令输出常量表
+
+![](/images/posts/jvm/bytecode/9.jpg)
+
+```sh
+其中有些常量似乎从来没有在代码中出现过，如“I”“V”“<init>”“LineNumberTable”“LocalVariableTable”等。
+
+它们都是编译器自动生成的，会被后面即将讲到的字段表
+（field_info）、方法表（method_info）、属性表（attribute_info）所引用，它们将会被用来描述一些不
+方便使用“固定字节”进行表达的内容，譬如描述方法的返回值是什么，有几个参数，每个参数的类型
+是什么。
+```
