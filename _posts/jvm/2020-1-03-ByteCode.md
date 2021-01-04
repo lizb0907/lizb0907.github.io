@@ -188,9 +188,9 @@ Class文件中不会保存各个方法、字段最终在内存中的布局信息
 英文字符的变量或方法名，即使规则和全部字符都是合法的，也会无法编译。
 ```
 
-### 2.使用javap -verbose TestClass命令输出常量表
-
 ![](/images/posts/jvm/bytecode/9.jpg)
+
+使用javap -verbose TestClass命令输出常量表
 
 ```sh
 其中有些常量似乎从来没有在代码中出现过，如“I”“V”“<init>”“LineNumberTable”“LocalVariableTable”等。
@@ -199,4 +199,18 @@ Class文件中不会保存各个方法、字段最终在内存中的布局信息
 （field_info）、方法表（method_info）、属性表（attribute_info）所引用，它们将会被用来描述一些不
 方便使用“固定字节”进行表达的内容，譬如描述方法的返回值是什么，有几个参数，每个参数的类型
 是什么。
+```
+
+### 2.访问常量标识
+
+```sh
+在常量池结束之后，紧接着的2个字节代表访问标志（access_flags），这个标志用于识别一些类或
+者接口层次的访问信息，包括：这个Class是类还是接口；是否定义为public类型；是否定义为abstract
+类型；如果是类的话，是否被声明为final；
+```
+
+![](/images/posts/jvm/bytecode/10.jpg)
+
+```sh
+类型同时存在时进行 | 操作，如public final的值就是0x0011.
 ```
