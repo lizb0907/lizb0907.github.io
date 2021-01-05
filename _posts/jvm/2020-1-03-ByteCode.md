@@ -76,16 +76,16 @@ keywords: JVM,ByteCode
 
 ```sh
 ClassFile {
-    u4             magic;
-    u2             minor_version;
-    u2             major_version;
-    u2             constant_pool_count;
-    cp_info        constant_pool[constant_pool_count-1];
-    u2             access_flags;
-    u2             this_class;
-    u2             super_class;
-    u2             interfaces_count;
-    u2             interfaces[interfaces_count];
+    u4             magic; //魔数
+    u2             minor_version; //次版本号
+    u2             major_version; //主版本号
+    u2             constant_pool_count; //常量池数量+1
+    cp_info        constant_pool[constant_pool_count-1]; //常量池
+    u2             access_flags; // 访问标识
+    u2             this_class; // 常量池的有效下标
+    u2             super_class; // 常量池的有效下标
+    u2             interfaces_count; // 接口数
+    u2             interfaces[interfaces_count];// 下标从0开始，元素为常量池的有效下标
     u2             fields_count;
     field_info     fields[fields_count];
     u2             methods_count;
@@ -201,12 +201,16 @@ Class文件中不会保存各个方法、字段最终在内存中的布局信息
 是什么。
 ```
 
-### 2.访问常量标识
+### 2.访问标志
 
 ```sh
 在常量池结束之后，紧接着的2个字节代表访问标志（access_flags），这个标志用于识别一些类或
 者接口层次的访问信息，包括：这个Class是类还是接口；是否定义为public类型；是否定义为abstract
 类型；如果是类的话，是否被声明为final；
+
+注意纯看字节码和和javap -verbose命令输出的顺序有一些不一样，
+字节码常量池后面紧跟着的是访问标志，而javap -verbose命令先看到访问标志再常量池。
+我们这里指的是字节码，所以在常量池结束之后，紧接着的2个字节代表访问标志（access_flags）。
 ```
 
 ![](/images/posts/jvm/bytecode/10.jpg)
@@ -214,3 +218,12 @@ Class文件中不会保存各个方法、字段最终在内存中的布局信息
 ```sh
 类型同时存在时进行 | 操作，如public final的值就是0x0011.
 ```
+
+### 3.类索引、父类索引与接口索引集合
+
+```sh
+1.类索引（this_class）和父类索引（super_class）都是一个u2类型的数据，而接口索引集合
+（interfaces）是一组u2类型的数据的集合，Class文件中由这三项数据来确定该类型的继承关系。
+2.类索引用于确定这个类的全限定名，父类索引用于确定这个类的父类的全限定名。
+```
+
