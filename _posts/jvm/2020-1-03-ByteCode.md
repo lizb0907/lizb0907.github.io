@@ -235,4 +235,18 @@ Class文件中不会保存各个方法、字段最终在内存中的布局信息
 
 ### 4.字段表集合
 
+```sh
+字段表（field_info）用于描述接口或者类中声明的变量。Java语言中的“字段”（Field）包括类级变
+量以及实例级变量，但不包括在方法内部声明的局部变量。
+```
+
+![](/images/posts/jvm/bytecode/11.png)
+```sh
+1.对于数组类型，每一维度将使用一个前置的“[”字符来描述，如一个定义为“java.lang.String[][]”类型
+  的二维数组将被记录成“[[Ljava/lang/String；”，一个整型数组“int[]”将被记录成“[I”。
+2.用描述符来描述方法时，按照先参数列表、后返回值的顺序描述，参数列表按照参数的严格顺序
+  放在一组小括号“()”之内。如方法void inc()的描述符为“()V”，方法java.lang.String toString()的描述符
+  为“()Ljava/lang/String；”，方法int indexOf(char[]source，int sourceOffset，int sourceCount，char[]target，
+  int targetOffset，int targetCount，int fromIndex)的描述符为“([CII[CIII)I”。
+```
 
