@@ -1,12 +1,12 @@
 ---
 layout: post
-title: 游戏服务器寻路03
-categories: PathFinding
+title: 游戏服务器寻路03-a*代码实现
+categories: Path
 description: a*代码实现
 keywords: 游戏服务器寻路, a*代码实现
 ---
 
-游戏服务器寻路03
+游戏服务器寻路03-a*代码实现
 
 **目录**
 

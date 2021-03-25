@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 服务器寻路02-a*算法基础认识
-categories: PathFinding
+categories: Path
 description: a*算法基础认识
 keywords: 游戏，寻路, a*算法基础认识
 ---
