@@ -518,7 +518,7 @@ public class Node {
 
 #### 3.测试方法
 
-![](/images/posts/jvm/findpath/2.jpg)
+![](/images/posts/findpath/2.jpg)
 
 用图片展示吧，上面有特殊符号会引起博客报错。
 
