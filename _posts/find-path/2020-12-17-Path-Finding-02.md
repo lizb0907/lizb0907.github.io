@@ -1,12 +1,12 @@
 ---
 layout: post
-title: 游戏服务器寻路02
+title: 服务器寻路02-a*算法基础认识
 categories: Find-Path
 description: a*算法基础认识
 keywords: 游戏，寻路, a*算法基础认识
 ---
 
-游戏服务器寻路02
+服务器寻路02-a*算法基础认识
 
 **目录**
 
@@ -14,7 +14,6 @@ keywords: 游戏，寻路, a*算法基础认识
 {:toc}
 
 ## A*算法基础认识
-
 
 ### 1.广度优先搜索算法、迪科斯彻算法、A*算法
 
