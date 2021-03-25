@@ -518,25 +518,9 @@ public class Node {
 
 #### 3.测试方法
 
-```sh
-public static void main(String[] args) 
-{
-    Node initialNode = new Node(2, 1);
-    Node finalNode = new Node(2, 5);
-    int rows = 6;
-    int cols = 7;
-    //初始化搜索区域
-    AStar aStar = new AStar(rows, cols, initialNode, finalNode);
-    //设置阻挡区域
-    int[][] blocksArray = new int[][]{{1, 3}, {2, 3}, {3, 3}};
-    aStar.setBlocks(blocksArray);
-    //寻路
-    List<Node> path = aStar.findPath();
-    for (Node node : path) {
-        System.out.println(node);
-    }
-}
-```
+![](/images/posts/jvm/findpath/2.jpg)
+
+用图片展示吧，上面有特殊符号会引起博客报错。
 
 #### 4.结果
 
