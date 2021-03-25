@@ -1,16 +1,16 @@
 ---
 layout: post
-title: ������Ѱ·01-��ѧ����֪ʶ
+title: 服务器寻路01-数学基本知识
 categories: Path
-description: ������Ѱ·��Ҫ����ѧ����֪ʶ
-keywords: ��Ϸ��Ѱ·, ��ѧ����֪ʶ
+description: 数学基本知识
+keywords: 游戏，寻路, 数学基本知识
 ---
 
-������Ѱ·01-��ѧ����֪ʶ
+服务器寻路01-数学基本知识
 
-**Ŀ¼**
+**目录**
 
 * TOC
 {:toc}
 
-## ��ѧ����֪ʶ
+## 数学基本知识
