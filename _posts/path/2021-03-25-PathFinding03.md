@@ -516,34 +516,78 @@ public class Node {
 }
 ```
 
-#### 3.测试类
+#### 3.测试方法
 
 ```sh
-public class AStarTest 
+public static void main(String[] args) 
 {
-
-    public static void main(String[] args) 
-    {
-        //起点（2,1）,终点(2,5)
-        Node initialNode = new Node(2, 1);
-        Node finalNode = new Node(2, 5);
-        int rows = 6;
-        int cols = 7;
-        //初始化搜索区域
-        AStar aStar = new AStar(rows, cols, initialNode, finalNode);
-        //设置阻挡区域
-        int[][] blocksArray = new int[][]{{1, 3}, {2, 3}, {3, 3}};
-        aStar.setBlocks(blocksArray);
-        //寻路
-        List<Node> path = aStar.findPath();
-        for (Node node : path) {
-            System.out.println(node);
-        }
+    //起点（2,1）,终点(2,5)
+    Node initialNode = new Node(2, 1);
+    Node finalNode = new Node(2, 5);
+    int rows = 6;
+    int cols = 7;
+    //初始化搜索区域
+    AStar aStar = new AStar(rows, cols, initialNode, finalNode);
+    //设置阻挡区域
+    int[][] blocksArray = new int[][]{{1, 3}, {2, 3}, {3, 3}};
+    aStar.setBlocks(blocksArray);
+    //寻路
+    List<Node> path = aStar.findPath();
+    for (Node node : path) {
+        System.out.println(node);
     }
 }
-
 ```
 
+#### 4.结果
+
+```sh
+//Search Area
+//      0   1   2   3   4   5   6
+// 0    -   -   -   -   -   -   -
+// 1    -   -   -   B   -   -   -
+// 2    -   I   -   B   -   F   -
+// 3    -   -   -   B   -   -   -
+// 4    -   -   -   -   -   -   -
+// 5    -   -   -   -   -   -   -
+
+//Expected output with diagonals
+//Node [row=2, col=1]
+//Node [row=1, col=2]
+//Node [row=0, col=3]
+//Node [row=1, col=4]
+//Node [row=2, col=5]
+
+//Search Path with diagonals
+//      0   1   2   3   4   5   6
+// 0    -   -   -   *   -   -   -
+// 1    -   -   *   B   *   -   -
+// 2    -   I*  -   B   -  *F   -
+// 3    -   -   -   B   -   -   -
+// 4    -   -   -   -   -   -   -
+// 5    -   -   -   -   -   -   -
+
+//Expected output without diagonals
+//Node [row=2, col=1]
+//Node [row=2, col=2]
+//Node [row=1, col=2]
+//Node [row=0, col=2]
+//Node [row=0, col=3]
+//Node [row=0, col=4]
+//Node [row=1, col=4]
+//Node [row=2, col=4]
+//Node [row=2, col=5]
+
+//Search Path without diagonals
+//      0   1   2   3   4   5   6
+// 0    -   -   *   *   *   -   -
+// 1    -   -   *   B   *   -   -
+// 2    -   I*  *   B   *  *F   -
+// 3    -   -   -   B   -   -   -
+// 4    -   -   -   -   -   -   -
+// 5    -   -   -   -   -   -   -
+
+```
 ### 3.总结
 
 ```sh
