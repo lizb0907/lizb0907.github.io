@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 游戏服务器寻路03
-categories: Find-Path
+categories: PathFinding
 description: a*代码实现
 keywords: 游戏服务器寻路, a*代码实现
 ---

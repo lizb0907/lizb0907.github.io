@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 游戏服务器寻路01
-categories: Find-Path
+categories: PathFinding
 description: 一些需要掌握的数学知识
 keywords: 游戏服务器寻路，数学知识
 ---
