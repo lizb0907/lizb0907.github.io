@@ -521,7 +521,6 @@ public class Node {
 ```sh
 public static void main(String[] args) 
 {
-    //起点（2,1）,终点(2,5)
     Node initialNode = new Node(2, 1);
     Node finalNode = new Node(2, 5);
     int rows = 6;
