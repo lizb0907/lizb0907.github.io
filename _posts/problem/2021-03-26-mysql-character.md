@@ -70,7 +70,7 @@ mysql5.7版本，字符集设置为utf8，在执行emoji表情符（4字节的�
 ```
 
 pom.xml中的mysql-connector-java版本号需要符合如下：
-![](/images/posts/findpath/2.jpg)
+![](/images/posts/problem/1.jpg)
 
 
 ## 6.未来趋势
