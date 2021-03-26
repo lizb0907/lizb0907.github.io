@@ -17,7 +17,7 @@ keywords: 游戏，寻路, a*代码实现
 
 ### 1.网上有很多A*代码实现
 
-```sh
+```java
 网上有很多A*代码实现，但是java版本的比较少，并且代码质量参差不齐，我这里找了个github上的还可以：
 https://github.com/marcelo-s/A-Star-Java-Implementation
 
@@ -361,7 +361,7 @@ public class AStar {
 
 #### 2.Node类
 
-```sh
+```java
 package org.example;
 
 /**
@@ -524,7 +524,7 @@ public class Node {
 
 #### 4.结果
 
-```sh
+```java
 //Search Area
 //      0   1   2   3   4   5   6
 // 0    -   -   -   -   -   -   -
@@ -569,7 +569,6 @@ public class Node {
 // 3    -   -   -   B   -   -   -
 // 4    -   -   -   -   -   -   -
 // 5    -   -   -   -   -   -   -
-
 ```
 ### 3.总结
 
