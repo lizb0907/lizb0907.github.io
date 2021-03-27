@@ -40,3 +40,10 @@ keywords: 游戏，寻路, 漏斗算法
 ```
 
 ## 漏斗算法路径平滑处理
+
+```sh
+参考链接：
+1.https://gamedev.stackexchange.com/questions/68302/how-does-the-simple-stupid-funnel-algorithm-work
+2.http://www.cppstore.com/article-626.html
+3.基于多边形导航网格地图的改进 A*算法（朱昌龙 1，2，刘黎志）
+```
