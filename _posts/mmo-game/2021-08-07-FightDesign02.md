@@ -1,12 +1,12 @@
 ---
 layout: post
-title: mmo游戏里战斗设计01-了解战斗系统
+title: mmo游戏里战斗设计02-初步设计
 categories: Mmo-Game
-description: mmo游戏里战斗设计01-了解战斗系统
+description: mmo游戏里战斗设计02-初步设计
 keywords: fight，mmo，game
 ---
 
-mmo游戏里战斗设计01-了解战斗系统
+mmo游戏里战斗设计02-初步设计
 
 **目录**
 
