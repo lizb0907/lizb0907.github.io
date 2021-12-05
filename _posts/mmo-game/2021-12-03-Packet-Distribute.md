@@ -22,7 +22,7 @@ keywords: packet,distribute,mmo,game
 
 2.消息派发机制实现一般用两种：
   a.反射
-  b.javassist运行时动态加载
+  b.javassist提升发射效率
 ```
 
 ## 消息派发机制实现
@@ -184,7 +184,7 @@ packetMethods[]消息id对应的方法值，packetModules[]消息id对应的类�
 根据反射将消息进行分发，到此，我们就将运用反射进行的消息派发机制总结完毕了。
 
 
-### 2.javassist运行时动态加载
+### 2.javassist提升发射效率
 
 ```sh
 待补充
