@@ -444,5 +444,6 @@ public class BPDispatcher extends Dispatcher
 ```sh
 1.利用javassist，在起服时的时候动态生成代码，将消息ID作为switch的key,case执行具体方法，过程中没
   有用到反射，肯定远大于用反射的性能。
-
+2.反射在执行可变参数会生成一个数组“public Object invoke(Object obj, Object...args)”, 会new对
+  象导致gc。
 ```
