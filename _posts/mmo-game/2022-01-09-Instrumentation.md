@@ -15,9 +15,10 @@ Instrumentation热更限制
 
 ## Instrumentation热更有什么限制?
 
+```sh
 我们知道游戏里对代码热更，会使用Instrumentation的redefineClasses(ClassDefinition... var1)方法来重定义类，
-
 说白了就是动态修改字节码，那么该方法有什么限制吗？
+```
 
 ```sh
 The redefinition may change method bodies, the constant pool and attributes. 
@@ -214,16 +215,19 @@ if (!old_fs.done() || !new_fs.done()) {
 
 ## 从源码角度总结
 
+```sh
 Instrumentation重定义类时，不能添加、移除或重命名字段和方法，不能改变方法的签名，不能改变继承关系。
 
 从源码角度来看是因为源码底层做了各种条件限制检测，条件不符合就会导致重定义失败。
+```
 
 ## 为什么源码的作者需要加入这些限制检测？并说未来可能移除这些检测？
 
+```sh
 个人猜测，重定义类总的来说就是只更新了类里内容，相当于只更新了指针指向的内容，并没有更新指针，
 
 当前这么做可以避免遍历大量已有类对象对它们进行更新带来的开销。（这里需要补充new对象的jvm里相关知识）
-
+```
 
 ## 参考文章
 
