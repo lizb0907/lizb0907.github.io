@@ -225,6 +225,11 @@ Instrumentation重定义类时，不能添加、移除或重命名字段和方�
 当前这么做可以避免遍历大量已有类对象对它们进行更新带来的开销。（这里需要补充new对象的jvm里相关知识）
 
 
+## 参考文章
+
+https://titanwolf.org/Network/Articles/Article?AID=da87f6a7-2ba1-4407-8bfb-74ccb1e0e46d
+
+
 
 
 
