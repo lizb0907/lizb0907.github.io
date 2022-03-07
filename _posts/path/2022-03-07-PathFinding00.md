@@ -32,8 +32,6 @@ RecastDemo最新编译可以执行断点操作步骤详解
 
 ### 2.编译
 
-![](/images/posts/findpath/7.png)
-
 ```sh
 1.SDL2源码解压后的文件夹放到RecastNavigation/RecastDemo/Contrib/目录下
 （目录名如果是SDL-2.xx需要改名为SDL）
@@ -45,8 +43,9 @@ RecastDemo最新编译可以执行断点操作步骤详解
     recastnavigation-master\RecastDemo\SDL\VisualC\Win64\Debug该目录下就会生成需要的三个文件：
     SDL2.dll、SDL2.lib、SDL2main.lib
 ```
+![](/images/posts/findpath/4.jpg)
 
-![](/images/posts/findpath/7.png)
+![](/images/posts/findpath/1.png)
 
 ```sh
 3.编译成功后将RecastDemo/Contrib/SDL/VisualC/x64/Debug下的SDL2.dll、SDL2.lib、SDL2main.lib
