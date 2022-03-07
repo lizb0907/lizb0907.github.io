@@ -40,11 +40,10 @@ RecastDemo最新编译可以执行断点操作步骤详解
 ```sh
 2.进入RecastDemo/Contrib/SDL/VisualC，用visual studio打开SDL.sln，执行编译生成解决方案（debug+win64模式编译）：
 
-![](/images/posts/findpath/7.jpg)
-
 recastnavigation-master\RecastDemo\SDL\VisualC\Win64\Debug该目录下就会生成需要的三个文件：
 SDL2.dll、SDL2.lib、SDL2main.lib
 ```
+![](/images/posts/findpath/7.jpg)
 
 ```sh
 3.编译成功后将RecastDemo/Contrib/SDL/VisualC/x64/Debug下的SDL2.dll、SDL2.lib、SDL2main.lib复制到RecastDemo/Contrib/SDL/lib/x64：
@@ -63,3 +62,16 @@ SDL2.dll、SDL2.lib、SDL2main.lib
       a.Debug-----Win64模式下
       b.点击项目-重定解决方案目标
 ```
+
+```sh
+8.进入/RecastDemo/Build/vs2017，用.Rider for Unreal Engine 打开recastnavigation.sln
+  打开后，选中RecastDemo，右键Debug运行：
+```
+![](/images/posts/findpath/8.jpg)
+
+![](/images/posts/findpath/9.jpg)
+
+```sh
+9.执行断点调试：
+```
+![](/images/posts/findpath/10.jpg)
