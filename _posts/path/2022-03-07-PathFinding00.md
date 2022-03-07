@@ -38,16 +38,19 @@ RecastDemo最新编译可以执行断点操作步骤详解
 ```
 
 ```sh
-2.进入RecastDemo/Contrib/SDL/VisualC，用visual studio打开SDL.sln，执行编译生成解决方案（debug+win64模式编译）：
-
-recastnavigation-master\RecastDemo\SDL\VisualC\Win64\Debug该目录下就会生成需要的三个文件：
-SDL2.dll、SDL2.lib、SDL2main.lib
+2.进入RecastDemo/Contrib/SDL/VisualC，用visual studio打开SDL.sln，
+    执行编译生成解决方案（debug+win64模式编译）：
+    recastnavigation-master\RecastDemo\SDL\VisualC\Win64\Debug该目录下就会生成需要的三个文件：
+    SDL2.dll、SDL2.lib、SDL2main.lib
 ```
+
 ![](/images/posts/findpath/7.png)
 
 ```sh
-3.编译成功后将RecastDemo/Contrib/SDL/VisualC/x64/Debug下的SDL2.dll、SDL2.lib、SDL2main.lib复制到RecastDemo/Contrib/SDL/lib/x64：
-注意：lib/x64本身文件夹不存在，我们需要新建文件夹，然后SDL2.dll、SDL2.lib、SDL2main.lib都复制到该文件夹下
+3.编译成功后将RecastDemo/Contrib/SDL/VisualC/x64/Debug下的SDL2.dll、SDL2.lib、SDL2main.lib
+复制到RecastDemo/Contrib/SDL/lib/x64：
+    注意：lib/x64本身文件夹不存在，我们需要新建文件夹，
+    然后SDL2.dll、SDL2.lib、SDL2main.lib都复制到该文件夹下
 ```
 
 ```sh
