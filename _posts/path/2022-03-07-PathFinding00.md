@@ -32,6 +32,8 @@ RecastDemo最新编译可以执行断点操作步骤详解
 
 ### 2.编译
 
+![](/images/posts/findpath/7.png)
+
 ```sh
 1.SDL2源码解压后的文件夹放到RecastNavigation/RecastDemo/Contrib/目录下
 （目录名如果是SDL-2.xx需要改名为SDL）
