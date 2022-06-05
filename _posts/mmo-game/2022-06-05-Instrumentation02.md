@@ -189,8 +189,9 @@ public class ExceptionUtils
 <dependency>
 			<groupId>com.minigame</groupId>
 			<artifactId>agent</artifactId>
+			<version>1.0</version>
 			<scope>system</scope>
-			<systemPath>${basedir}/src/main/resources/class/agent-1.jar</systemPath>
+			<systemPath>${pom.basedir}/src/main/resources/class/agent-1.jar</systemPath>
 </dependency>
 
 
