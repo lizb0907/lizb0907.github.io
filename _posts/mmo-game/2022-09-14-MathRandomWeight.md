@@ -15,7 +15,7 @@ keywords: 根据权重随机算法，mmo
 
 ## 根据权重，随机多个值,可重复
 
-```java
+```sh
  /**
   * 根据权重，随机多个值,可重复
   * <p>
@@ -77,7 +77,7 @@ public static int[] randomManyRepeat(int[] values, int[] weightArr, int num)
 }
 ```
 
-```java
+```sh
 /**
 * 随机一个整数(0<=res<n)
 *
