@@ -3,7 +3,7 @@ layout: post
 title: 根据权重随机算法
 categories: Mmo-Game
 description: 根据权重随机算法
-keywords: 根据权重随机算法，mmo
+keywords: 根据权重随机算法,mmo
 ---
 
 根据权重随机算法
@@ -16,7 +16,7 @@ keywords: 根据权重随机算法，mmo
 ## 一：根据权重，随机多个值,可重复  
 
 ```sh
- /**
+/**
   * 根据权重，随机多个值,可重复
   * <p>
   * ( 随机数组和权重数组的长度不能小于随机次数 )
@@ -77,6 +77,8 @@ public static int[] randomManyRepeat(int[] values, int[] weightArr, int num)
 }
 ```
 
+随机一个整数(0<=res<n)
+
 ```sh
 /**
 * 随机一个整数(0<=res<n)
@@ -94,6 +96,7 @@ public static int randomInt(int n)
     return random.nextInt(n);
 }
 ```
+
 
 
 
